@@ -1,13 +1,15 @@
 # Railway Quick Fix Guide
 
-## Most Common Issue: Wrong Settings
+## ⚠️ IMPORTANT: Root Directory Must Be Set!
+
+Railway is detecting your root `package.json` and thinking it's a Node.js project. You MUST set the Root Directory!
 
 ### ✅ Correct Railway Settings:
 
 1. **Service Settings** (Go to your service → Settings tab):
-   - **Root Directory**: `spring-backend` ⚠️ (NOT empty, NOT `spring-backend/src`)
-   - **Build Command**: `./mvnw clean package -DskipTests`
-   - **Start Command**: `java -jar target/*.jar`
+   - **Root Directory**: `spring-backend` ⚠️ **CRITICAL - Must be set!**
+   - **Build Command**: `./mvnw clean package -DskipTests` (or leave empty for auto-detect)
+   - **Start Command**: `java -jar target/*.jar` (or leave empty for auto-detect)
 
 2. **Environment Variables** (Go to Variables tab):
    - Add database variables from MySQL service

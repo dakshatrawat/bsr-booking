@@ -1,0 +1,9 @@
+[phases.setup]
+nixPkgs = { jdk = "21" }
+
+[phases.install]
+cmds = ["chmod +x ./mvnw", "./mvnw clean package -DskipTests"]
+
+[start]
+cmd = "java -jar target/*.jar"
+
