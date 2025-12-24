@@ -3,9 +3,7 @@ nixPkgs = ["jdk"]
 
 [phases.install]
 cmds = [
-  "cd spring-backend",
-  "chmod +x ./mvnw",
-  "./mvnw clean package -DskipTests"
+  "cd spring-backend && chmod +x ./mvnw && ./mvnw clean package -DskipTests"
 ]
 
 [start]
