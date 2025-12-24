@@ -3,7 +3,7 @@ nixPkgs = ["jdk"]
 
 [phases.install]
 cmds = [
-  "cd spring-backend && chmod +x ./mvnw && ./mvnw clean package -DskipTests"
+  "if [ -f spring-backend/mvnw ]; then cd spring-backend && chmod +x ./mvnw && ./mvnw clean package -DskipTests; else echo 'mvnw not found, using mvn'; cd spring-backend && mvn clean package -DskipTests; fi"
 ]
 
 [start]

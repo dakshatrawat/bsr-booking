@@ -28,9 +28,7 @@ angular-frontend/*.log
 
 # Spring Backend
 spring-backend/target/
-spring-backend/.mvn/
-spring-backend/mvnw
-spring-backend/mvnw.cmd
+spring-backend/.mvn/wrapper/maven-wrapper.jar
 spring-backend/.classpath
 spring-backend/.project
 spring-backend/.settings/
