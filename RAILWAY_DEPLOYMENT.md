@@ -32,9 +32,13 @@ Step-by-step guide to deploy Spring Boot backend on Railway.
 
 1. Click on your **service** (the one that says "bsr-booking" or similar)
 2. Go to **"Settings"** tab
-3. Set **Root Directory**: `spring-backend`
-4. Set **Build Command**: `./mvnw clean package -DskipTests`
-5. Set **Start Command**: `java -jar target/*.jar`
+3. **CRITICAL:** Set **Root Directory**: `spring-backend` ⚠️
+   - This tells Railway to look in `spring-backend` folder, not root
+   - Without this, Railway detects root `package.json` and thinks it's Node.js
+4. Set **Build Command**: `./mvnw clean package -DskipTests` (or leave empty - auto-detect)
+5. Set **Start Command**: `java -jar target/*.jar` (or leave empty - auto-detect)
+
+**Alternative:** If Root Directory setting doesn't work, the `nixpacks.toml` file in root will force Java detection.
 
 ## Step 5: Add Environment Variables
 

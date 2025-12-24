@@ -1,0 +1,8 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "cd spring-backend && java -jar target/*.jar"
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 10
+

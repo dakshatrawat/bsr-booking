@@ -1,0 +1,13 @@
+[phases.setup]
+nixPkgs = { jdk = "21" }
+
+[phases.install]
+cmds = [
+  "cd spring-backend",
+  "chmod +x ./mvnw",
+  "./mvnw clean package -DskipTests"
+]
+
+[start]
+cmd = "cd spring-backend && java -jar target/*.jar"
+
