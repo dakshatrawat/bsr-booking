@@ -1,7 +1,7 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "angular-frontend/dist/hotel-angular/browser",
-  "installCommand": "npm install",
+  "installCommand": "echo 'Skipping root install, will install in build step'",
   "framework": null,
   "rewrites": [
     {
