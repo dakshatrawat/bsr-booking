@@ -33,6 +33,7 @@ spring-backend/.classpath
 spring-backend/.project
 spring-backend/.settings/
 spring-backend/.springBeans
+# Note: .mvn/wrapper/maven-wrapper.properties is needed for mvnw to work
 
 # Build files
 *.class
