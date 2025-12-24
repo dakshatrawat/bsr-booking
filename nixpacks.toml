@@ -6,6 +6,9 @@ cmds = [
   "cd spring-backend && mvn clean package -DskipTests"
 ]
 
+[phases.build]
+cmds = ["echo 'Skipping npm build - this is a Java project'"]
+
 [start]
 cmd = "cd spring-backend && java -jar target/HotelBooking-0.0.1-SNAPSHOT.jar"
 
