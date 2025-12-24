@@ -1,7 +1,7 @@
 {
-  "buildCommand": "cd angular-frontend && npm run build:prod",
+  "buildCommand": "npm run build",
   "outputDirectory": "angular-frontend/dist/hotel-angular/browser",
-  "installCommand": "cd angular-frontend && npm install",
+  "installCommand": "npm install",
   "framework": null,
   "rewrites": [
     {
