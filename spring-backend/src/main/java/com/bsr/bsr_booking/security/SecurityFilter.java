@@ -43,10 +43,10 @@ public class SecurityFilter {
                                 .authenticationEntryPoint(customAuthenticationEntryPoint)
                 )
                 .authorizeHttpRequests(request -> request
+                        .requestMatchers("/", "/api/health").permitAll()
                         .requestMatchers("/api/auth/**", "/api/rooms/**", "/api/bookings/**", "/uploads/**").permitAll()
                         .requestMatchers("/api/hotel-images/all", "/api/hotel-images/*/image").permitAll()
                         .requestMatchers("/api/payments/**").permitAll()
-                        .requestMatchers("/api/health").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
