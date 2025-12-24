@@ -1,0 +1,108 @@
+/* Skyscanner-Style Manage Rooms */
+
+.all-rooms {
+  margin: 80px 0 40px;
+  padding: 0 16px;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 24px;
+  color: var(--text-primary);
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.filter-div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 16px;
+  background: var(--pure-white);
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+label {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.filter-child {
+  flex: 1;
+  min-width: 200px;
+}
+
+button {
+  padding: 12px 24px;
+  font-size: 14px;
+  background-color: var(--skyscanner-blue);
+  color: var(--pure-white);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  background-color: var(--skyscanner-blue-dark);
+}
+
+select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: var(--pure-white);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+select:focus {
+  outline: none;
+  border-color: var(--skyscanner-blue);
+  box-shadow: 0 0 0 3px var(--skyscanner-blue-light);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .all-rooms {
+    margin: 64px 0 var(--mobile-spacing-xl);
+    padding: 0 var(--mobile-spacing-md);
+  }
+
+  h2 {
+    font-size: 20px;
+    margin-bottom: var(--mobile-spacing-lg);
+  }
+
+  .filter-div {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--mobile-spacing-sm);
+    padding: var(--mobile-spacing-md);
+    margin-bottom: var(--mobile-spacing-lg);
+  }
+
+  label {
+    margin-bottom: var(--mobile-spacing-xs);
+  }
+
+  .filter-child {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  button {
+    width: 100%;
+    margin: var(--mobile-spacing-xs) 0 0;
+  }
+}

@@ -1,0 +1,43 @@
+/* Skyscanner-Style Pagination */
+
+div {
+  display: flex;
+  justify-content: center;
+  padding: 20px 0;
+}
+
+ul {
+  list-style-type: none;
+  display: flex;
+  padding: 0;
+  gap: 4px;
+}
+
+li {
+  margin: 0;
+}
+
+.page-button {
+  background-color: var(--pure-white);
+  color: var(--skyscanner-blue);
+  border: 1px solid var(--skyscanner-blue);
+  border-radius: 4px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  font-weight: 500;
+  min-width: 40px;
+  text-align: center;
+}
+
+.page-button:hover {
+  background-color: var(--skyscanner-blue);
+  color: var(--pure-white);
+}
+
+.current-page {
+  background-color: var(--skyscanner-blue);
+  color: var(--pure-white);
+  border-color: var(--skyscanner-blue);
+}

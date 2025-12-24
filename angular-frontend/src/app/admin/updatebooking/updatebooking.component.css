@@ -1,0 +1,187 @@
+/* Skyscanner-Style Update Booking */
+
+.container {
+  max-width: 900px;
+  margin: 80px auto 40px;
+  padding: 32px;
+  font-family: inherit;
+  background-color: var(--pure-white);
+  border-radius: 4px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+}
+
+h2,
+h3 {
+  color: var(--text-primary);
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+h2 {
+  font-size: 24px;
+  text-align: center;
+}
+
+h3 {
+  font-size: 18px;
+  border-bottom: 2px solid var(--skyscanner-blue);
+  padding-bottom: 8px;
+}
+
+p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.success {
+  color: #2E7D32;
+  background-color: #E8F5E9;
+  padding: 12px 16px;
+  border-radius: 4px;
+  border: 1px solid #C8E6C9;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.error {
+  color: #D32F2F;
+  background-color: #FFEBEE;
+  padding: 12px 16px;
+  border-radius: 4px;
+  border: 1px solid #FFCDD2;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+.details {
+  background-color: var(--gray-50);
+  padding: 24px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  margin-bottom: 24px;
+}
+
+.details p {
+  margin: 10px 0;
+  color: var(--text-secondary);
+}
+
+.details img {
+  width: 100%;
+  max-width: 400px;
+  height: auto;
+  border-radius: 4px;
+  margin-top: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 14px;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.form-group select {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--pure-white);
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.form-group select:focus {
+  border-color: var(--skyscanner-blue);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--skyscanner-blue-light);
+}
+
+button {
+  background-color: var(--skyscanner-blue);
+  color: var(--pure-white);
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  background-color: var(--skyscanner-blue-dark);
+}
+
+.isLoading {
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-top: 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    margin: 64px var(--mobile-spacing-md) var(--mobile-spacing-xl);
+    padding: var(--mobile-spacing-lg);
+  }
+
+  h2 {
+    font-size: 20px;
+    margin-bottom: var(--mobile-spacing-md);
+  }
+
+  h3 {
+    font-size: 16px;
+    margin-bottom: var(--mobile-spacing-sm);
+    padding-bottom: var(--mobile-spacing-xs);
+  }
+
+  .success,
+  .error {
+    margin-bottom: var(--mobile-spacing-md);
+    padding: var(--mobile-spacing-sm) var(--mobile-spacing-md);
+  }
+
+  .details {
+    padding: var(--mobile-spacing-lg);
+    margin-bottom: var(--mobile-spacing-lg);
+  }
+
+  .details p {
+    margin: var(--mobile-spacing-xs) 0;
+  }
+
+  .details img {
+    margin-top: var(--mobile-spacing-md);
+  }
+
+  .form-group {
+    margin-bottom: var(--mobile-spacing-md);
+  }
+
+  .form-group label {
+    margin-bottom: var(--mobile-spacing-xs);
+  }
+
+  button {
+    width: 100%;
+    margin-top: var(--mobile-spacing-sm);
+  }
+
+  .isLoading {
+    margin-top: var(--mobile-spacing-md);
+  }
+}

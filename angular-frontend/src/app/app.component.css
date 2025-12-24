@@ -1,0 +1,40 @@
+/* App Component - Main Layout */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--pure-white);
+  width: 100%;
+  overflow-x: hidden; /* Prevent horizontal scroll */
+  max-width: 100vw; /* Prevent white line on right side */
+}
+
+app-navbar {
+  flex-shrink: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  z-index: 1000;
+}
+
+router-outlet {
+  flex: 1;
+  margin-top: 64px; /* Account for fixed navbar */
+  width: 100%;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  router-outlet {
+    margin-top: 64px; /* Keep consistent navbar height on mobile */
+  }
+}
+
+app-footer {
+  flex-shrink: 0;
+  margin-top: auto;
+  width: 100%;
+}

@@ -1,0 +1,103 @@
+/* Skyscanner-Style Edit Profile */
+
+.profile {
+  max-width: 600px;
+  margin: 80px auto 40px;
+  padding: 32px;
+  font-family: inherit;
+  background-color: var(--pure-white);
+  border-radius: 4px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 24px;
+  color: var(--text-primary);
+  font-size: 24px;
+  font-weight: 600;
+}
+
+button {
+  background-color: var(--skyscanner-blue);
+  color: var(--pure-white);
+  border: none;
+  padding: 12px 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  display: block;
+  margin: 24px auto;
+  width: 100%;
+}
+
+button:hover {
+  background-color: var(--skyscanner-blue-dark);
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+input {
+  padding: 12px 16px;
+  font-size: 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  background-color: var(--pure-white);
+  color: var(--text-primary);
+  font-family: inherit;
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--skyscanner-blue);
+  box-shadow: 0 0 0 3px var(--skyscanner-blue-light);
+}
+
+input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.error {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background-color: #FFEBEE;
+  color: #D32F2F;
+  border-radius: 4px;
+  border: 1px solid #FFCDD2;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .profile {
+    margin: 64px var(--mobile-spacing-md) var(--mobile-spacing-xl);
+    padding: var(--mobile-spacing-lg);
+  }
+
+  h2 {
+    font-size: 20px;
+    margin-bottom: var(--mobile-spacing-lg);
+  }
+
+  form {
+    gap: var(--mobile-spacing-md);
+  }
+
+  button {
+    margin: var(--mobile-spacing-lg) auto;
+  }
+
+  .error {
+    margin-bottom: var(--mobile-spacing-md);
+    padding: var(--mobile-spacing-sm) var(--mobile-spacing-md);
+  }
+}

@@ -1,0 +1,64 @@
+/* Skyscanner-Style Admin Home */
+
+.admin {
+  max-width: 900px;
+  margin: 80px auto 40px;
+  padding: 32px;
+  border-radius: 4px;
+  background-color: var(--pure-white);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+  text-align: center;
+}
+
+h1 {
+  font-size: 28px;
+  color: var(--text-primary);
+  margin-bottom: 24px;
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+button {
+  padding: 12px 24px;
+  font-size: 14px;
+  color: var(--pure-white);
+  background-color: var(--skyscanner-blue);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 600;
+}
+
+button:hover {
+  background-color: var(--skyscanner-blue-dark);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .admin {
+    margin: 64px var(--mobile-spacing-md) var(--mobile-spacing-xl);
+    padding: var(--mobile-spacing-lg);
+  }
+
+  h1 {
+    font-size: 22px;
+    margin-bottom: var(--mobile-spacing-lg);
+  }
+
+  .actions {
+    flex-direction: column;
+    gap: var(--mobile-spacing-sm);
+  }
+
+  button {
+    width: 100%;
+  }
+}

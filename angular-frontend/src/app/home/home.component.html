@@ -1,0 +1,260 @@
+<div class="home">
+  <!-- Premium Hero Section -->
+  <section class="hero-section">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <h1 class="hero-title fade-in-up">Welcome to Bhagat Singh Resort</h1>
+      <p class="hero-subtitle fade-in-up">Your Mountain Escape Awaits</p>
+      <p class="hero-description fade-in-up">
+        Experience tranquility and comfort in the heart of the mountains. 
+        Where luxury meets nature.
+      </p>
+      <div class="hero-cta fade-in-up">
+        <a routerLink="/rooms" class="btn btn-primary">
+          <i class="fas fa-calendar-check"></i>
+          Book Now
+        </a>
+        <a routerLink="/rooms" class="btn btn-outline">
+          <i class="fas fa-bed"></i>
+          View Rooms
+        </a>
+      </div>
+    </div>
+    <div class="hero-scroll">
+      <i class="fas fa-chevron-down"></i>
+    </div>
+  </section>
+
+  <!-- Room Search Section -->
+  <section class="search-section section">
+    <div class="container">
+      <div class="search-wrapper card">
+        <h2 class="section-title">
+          <i class="fas fa-search"></i>
+          Find Your Perfect Room
+        </h2>
+        <app-roomsearch (searchResults)="handleSearchResult($event)"></app-roomsearch>
+      </div>
+    </div>
+  </section>
+
+  <!-- Room Results Section -->
+  <section class="results-section section" *ngIf="searchResults.length > 0">
+    <div class="container">
+      <h2 class="section-title text-center">
+        <i class="fas fa-bed"></i>
+        Available Rooms
+      </h2>
+      <app-roomresult [roomSearchResults]="searchResults"></app-roomresult>
+    </div>
+  </section>
+
+  <!-- View All Rooms CTA -->
+  <section class="cta-section section" *ngIf="searchResults.length === 0">
+    <div class="container">
+      <div class="cta-card card text-center">
+        <div class="cta-icon">
+          <i class="fas fa-hotel"></i>
+        </div>
+        <h2>Explore All Our Rooms</h2>
+        <p>Discover our wide range of comfortable accommodations designed for your comfort</p>
+        <a routerLink="/rooms" class="btn btn-primary">
+          <i class="fas fa-arrow-right"></i>
+          View All Rooms
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services Section -->
+  <section class="services-section section">
+    <div class="container">
+      <div class="section-header text-center">
+        <h2 class="section-title">
+          <i class="fas fa-concierge-bell"></i>
+          Our Services
+        </h2>
+        <p class="section-subtitle">Everything you need for a perfect stay</p>
+      </div>
+      <div class="services-grid">
+        <div class="service-card card">
+          <div class="service-icon">
+            <i class="fas fa-parking"></i>
+          </div>
+          <h3>Free Parking</h3>
+          <p>Secure on-site parking available for all guests at no additional cost.</p>
+        </div>
+
+        <div class="service-card card">
+          <div class="service-icon">
+            <i class="fas fa-fire"></i>
+          </div>
+          <h3>Open Kitchen</h3>
+          <p>Watch our chefs prepare delicious meals in our open kitchen concept.</p>
+        </div>
+
+        <div class="service-card card">
+          <div class="service-icon">
+            <i class="fas fa-bell"></i>
+          </div>
+          <h3>Room Service</h3>
+          <p>Enjoy the convenience of in-room dining with our 24/7 room service.</p>
+        </div>
+
+        <div class="service-card card">
+          <div class="service-icon">
+            <i class="fas fa-shower"></i>
+          </div>
+          <h3>Geyser</h3>
+          <p>Hot water available 24/7 in all rooms for your comfort and convenience.</p>
+        </div>
+
+        <div class="service-card card">
+          <div class="service-icon">
+            <i class="fas fa-clock"></i>
+          </div>
+          <h3>24/7 Service</h3>
+          <p>Round-the-clock assistance and services available whenever you need us.</p>
+        </div>
+
+        <div class="service-card card">
+          <div class="service-icon">
+            <i class="fas fa-utensils"></i>
+          </div>
+          <h3>Fine Dining</h3>
+          <p>Experience exquisite mountain cuisine at our award-winning restaurant.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section class="about-section section">
+    <div class="container">
+      <div class="about-content">
+        <div class="about-text">
+          <h2 class="section-title">
+            <i class="fas fa-mountain"></i>
+            About Bhagat Singh Resort
+          </h2>
+          <p class="about-intro">
+            Nestled in the serene embrace of the mountains, Bhagat Singh Resort offers a perfect escape 
+            from the hustle and bustle of everyday life. Our resort is designed to provide you with 
+            unparalleled comfort while you immerse yourself in the breathtaking natural beauty that 
+            surrounds us.
+          </p>
+          <p>
+            Whether you're seeking a peaceful retreat, an adventurous mountain experience, or simply 
+            a place to reconnect with nature, our resort provides the perfect setting. Each room is 
+            thoughtfully designed to offer comfort and tranquility, with stunning views of the 
+            mountain landscape.
+          </p>
+          <div class="about-features">
+            <div class="feature-item">
+              <i class="fas fa-check-circle"></i>
+              <span>Breathtaking Mountain Views</span>
+            </div>
+            <div class="feature-item">
+              <i class="fas fa-check-circle"></i>
+              <span>Modern Premium Amenities</span>
+            </div>
+            <div class="feature-item">
+              <i class="fas fa-check-circle"></i>
+              <span>Traditional Mountain Hospitality</span>
+            </div>
+            <div class="feature-item">
+              <i class="fas fa-check-circle"></i>
+              <span>Peaceful & Tranquil Environment</span>
+            </div>
+          </div>
+          <!-- Hotel Images Slider from Database (Mobile View - After Features, Before Button) -->
+          <div class="about-image-mobile" *ngIf="hotelImages.length > 0">
+            <div class="hotel-image-slider">
+              <div class="slider-container">
+                <div 
+                  class="slider-track" 
+                  [style.transform]="'translateX(-' + (currentImageIndex * 100) + '%)'"
+                >
+                  <div 
+                    class="slider-slide" 
+                    *ngFor="let image of hotelImages; let i = index"
+                  >
+                    <img 
+                      [src]="getImageUrl(image)" 
+                      [alt]="image.description || 'Bhagat Singh Resort'" 
+                      class="slider-image"
+                      (error)="onImageError($event, image)"
+                      loading="lazy"
+                    />
+                    <div class="image-overlay"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="slider-indicators" *ngIf="hotelImages.length > 1">
+                <span 
+                  *ngFor="let image of hotelImages; let i = index"
+                  class="indicator"
+                  [class.active]="i === currentImageIndex"
+                  (click)="goToSlide(i)"
+                  [attr.aria-label]="'Go to image ' + (i + 1)"
+                ></span>
+              </div>
+            </div>
+          </div>
+          <!-- Loading State (Mobile) -->
+          <div class="about-image-mobile loading-state" *ngIf="hotelImages.length === 0 && loadingImages">
+            <div class="loading-spinner">
+              <i class="fas fa-spinner fa-spin"></i>
+              <p>Loading images...</p>
+            </div>
+          </div>
+          <a routerLink="/about" class="btn btn-secondary">
+            Learn More
+            <i class="fas fa-arrow-right"></i>
+          </a>
+        </div>
+        <!-- Desktop Image Slider -->
+        <div class="about-image">
+          <div class="hotel-image-slider" *ngIf="hotelImages.length > 0">
+            <div class="slider-container">
+              <div 
+                class="slider-track" 
+                [style.transform]="'translateX(-' + (currentImageIndex * 100) + '%)'"
+              >
+                <div 
+                  class="slider-slide" 
+                  *ngFor="let image of hotelImages; let i = index"
+                  [class.active]="i === currentImageIndex"
+                >
+                  <img 
+                    [src]="getImageUrl(image)" 
+                    [alt]="image.description || 'Bhagat Singh Resort'" 
+                    class="slider-image"
+                    (error)="onImageError($event, image)"
+                    loading="lazy"
+                  />
+                  <div class="image-overlay"></div>
+                </div>
+              </div>
+            </div>
+            <div class="slider-indicators" *ngIf="hotelImages.length > 1">
+              <span 
+                *ngFor="let image of hotelImages; let i = index"
+                class="indicator"
+                [class.active]="i === currentImageIndex"
+                (click)="goToSlide(i)"
+                [attr.aria-label]="'Go to image ' + (i + 1)"
+              ></span>
+            </div>
+          </div>
+          <div class="loading-spinner" *ngIf="hotelImages.length === 0 && loadingImages">
+            <i class="fas fa-spinner fa-spin"></i> Loading images...
+          </div>
+          <div class="no-images-placeholder" *ngIf="hotelImages.length === 0 && !loadingImages">
+            <p>No hotel images available.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

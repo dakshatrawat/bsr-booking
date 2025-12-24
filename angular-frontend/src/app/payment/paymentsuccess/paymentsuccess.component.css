@@ -1,0 +1,66 @@
+/* Skyscanner-Style Payment Success */
+
+div {
+  text-align: center;
+  padding: 60px 32px;
+  background-color: var(--pure-white);
+  border-radius: 4px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+  max-width: 600px;
+  margin: 80px auto 40px;
+}
+
+h1 {
+  color: #2E7D32;
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+a {
+  display: inline-block;
+  margin-top: 8px;
+  text-decoration: none;
+  padding: 12px 24px;
+  background-color: var(--skyscanner-blue);
+  color: var(--pure-white);
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+a:hover {
+  background-color: var(--skyscanner-blue-dark);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  div {
+    margin: 64px var(--mobile-spacing-md) var(--mobile-spacing-xl);
+    padding: var(--mobile-spacing-xl) var(--mobile-spacing-lg);
+  }
+
+  h1 {
+    font-size: 24px;
+    margin-bottom: var(--mobile-spacing-md);
+  }
+
+  p {
+    margin-bottom: var(--mobile-spacing-lg);
+  }
+
+  a {
+    margin-top: var(--mobile-spacing-sm);
+    width: 100%;
+    display: block;
+  }
+}

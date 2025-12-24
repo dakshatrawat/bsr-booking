@@ -1,0 +1,243 @@
+/* Skyscanner-Style About Page */
+
+.about-container {
+  min-height: calc(100vh - 200px);
+  background: var(--pure-white);
+  margin-top: 64px;
+  padding: 40px 0;
+}
+
+.hero-section {
+  background: linear-gradient(135deg, rgba(0, 113, 206, 0.5) 0%, rgba(0, 81, 163, 0.4) 100%),
+              url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80') center/cover;
+  background-attachment: fixed;
+  color: var(--pure-white);
+  text-align: center;
+  padding: 60px 16px;
+  position: relative;
+}
+
+.hero-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(0, 113, 206, 0.3) 0%, rgba(0, 81, 163, 0.25) 100%);
+}
+
+.hero-section h1 {
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--pure-white);
+  position: relative;
+  z-index: 2;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.hero-section .subtitle {
+  font-size: 18px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.95);
+  position: relative;
+  z-index: 2;
+}
+
+.content-section {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 16px;
+}
+
+.about-content {
+  margin-bottom: 40px;
+}
+
+.text-content {
+  background: var(--pure-white);
+  padding: 32px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  margin-bottom: 32px;
+}
+
+.text-content h2 {
+  font-size: 24px;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.text-content h2 i {
+  color: var(--skyscanner-blue);
+}
+
+.text-content p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 24px;
+  margin-top: 32px;
+}
+
+.feature-card {
+  background: var(--pure-white);
+  padding: 24px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.feature-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-dark);
+}
+
+.feature-icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 16px;
+  background: var(--skyscanner-blue-light);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.feature-icon i {
+  font-size: 1.5rem;
+  color: var(--skyscanner-blue);
+}
+
+.feature-card h3 {
+  font-size: 18px;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.feature-card p {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.cta-section {
+  background: var(--gray-50);
+  padding: 40px 32px;
+  border-radius: 4px;
+  text-align: center;
+  border: 1px solid var(--border-color);
+}
+
+.cta-section h2 {
+  font-size: 24px;
+  margin-bottom: 12px;
+  color: var(--text-primary);
+}
+
+.cta-section p {
+  font-size: 14px;
+  margin-bottom: 24px;
+  color: var(--text-secondary);
+}
+
+.cta-button {
+  display: inline-block;
+  padding: 12px 24px;
+  background-color: var(--skyscanner-blue);
+  color: var(--pure-white);
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.cta-button:hover {
+  background-color: var(--skyscanner-blue-dark);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .about-container {
+    margin-top: 64px;
+    padding: var(--mobile-spacing-xl) 0;
+  }
+
+  .hero-section {
+    padding: var(--mobile-spacing-xxl) var(--mobile-spacing-md);
+    background-attachment: scroll;
+  }
+
+  .hero-section h1 {
+    font-size: 24px;
+    margin-bottom: var(--mobile-spacing-sm);
+  }
+
+  .hero-section .subtitle {
+    font-size: 16px;
+  }
+
+  .content-section {
+    padding: var(--mobile-spacing-xl) var(--mobile-spacing-md);
+  }
+
+  .about-content {
+    margin-bottom: var(--mobile-spacing-xl);
+  }
+
+  .text-content {
+    padding: var(--mobile-spacing-lg);
+    margin-bottom: var(--mobile-spacing-lg);
+  }
+
+  .text-content h2 {
+    font-size: 20px;
+    margin-bottom: var(--mobile-spacing-md);
+  }
+
+  .text-content p {
+    margin-bottom: var(--mobile-spacing-md);
+  }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: var(--mobile-spacing-md);
+    margin-top: var(--mobile-spacing-lg);
+  }
+
+  .feature-card {
+    padding: var(--mobile-spacing-lg);
+  }
+
+  .feature-icon {
+    margin-bottom: var(--mobile-spacing-md);
+  }
+
+  .cta-section {
+    padding: var(--mobile-spacing-xl) var(--mobile-spacing-lg);
+    margin-top: var(--mobile-spacing-xl);
+  }
+
+  .cta-section h2 {
+    font-size: 20px;
+    margin-bottom: var(--mobile-spacing-sm);
+  }
+
+  .cta-section p {
+    margin-bottom: var(--mobile-spacing-lg);
+  }
+}

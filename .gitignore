@@ -1,0 +1,68 @@
+# Operating System Files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE Files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.settings/
+.classpath
+.project
+.factorypath
+.apt_generated
+.sts4-cache
+
+# Angular Frontend
+angular-frontend/node_modules/
+angular-frontend/dist/
+angular-frontend/.angular/
+angular-frontend/coverage/
+angular-frontend/.nyc_output/
+angular-frontend/*.log
+
+# Spring Backend
+spring-backend/target/
+spring-backend/.mvn/
+spring-backend/mvnw
+spring-backend/mvnw.cmd
+spring-backend/.classpath
+spring-backend/.project
+spring-backend/.settings/
+spring-backend/.springBeans
+
+# Build files
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Logs
+*.log
+logs/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Uploads (contains user-uploaded files)
+spring-backend/uploads/
+
+# Application properties (may contain sensitive data)
+# Uncomment if you want to exclude application.properties
+# spring-backend/src/main/resources/application.properties
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+

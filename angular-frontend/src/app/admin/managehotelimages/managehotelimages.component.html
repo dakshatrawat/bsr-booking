@@ -1,0 +1,94 @@
+<div class="manage-hotel-images">
+  <h2>Manage Hotel Images</h2>
+
+  <!-- Error and Success Messages -->
+  <div *ngIf="error" class="error-message">{{ error }}</div>
+  <div *ngIf="success" class="success-message">{{ success }}</div>
+
+  <!-- Add New Image Section -->
+  <div class="add-image-section card">
+    <h3>Add Hotel Images</h3>
+    <p class="help-text">Select multiple images to upload. Display order will be assigned automatically.</p>
+    
+    <form (ngSubmit)="addMultipleHotelImages()" class="image-form">
+      <div class="form-group">
+        <label class="form-label">Image Files *</label>
+        <input 
+          type="file" 
+          id="imageFiles"
+          multiple 
+          accept="image/*" 
+          (change)="onFileSelected($event)"
+          class="file-input"
+        />
+        <small>You can select multiple images at once (Ctrl+Click or Shift+Click)</small>
+      </div>
+
+      <!-- Preview selected files -->
+      <div *ngIf="newImageFiles.length > 0" class="selected-files">
+        <h4>Selected Files ({{ newImageFiles.length }})</h4>
+        <div *ngFor="let file of newImageFiles; let i = index" class="file-item">
+          <div class="file-preview">
+            <img [src]="filePreviews[i]" alt="Preview" />
+            <span class="file-name">{{ file.name }}</span>
+          </div>
+          <div class="file-description">
+            <label>Description (optional):</label>
+            <input 
+              type="text" 
+              [(ngModel)]="newDescriptions[i]" 
+              [name]="'desc_' + i"
+              placeholder="Enter description for this image"
+            />
+          </div>
+          <button type="button" (click)="removeFile(i)" class="btn-remove">
+            <i class="fas fa-times"></i> Remove
+          </button>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" [disabled]="uploading || newImageFiles.length === 0">
+        <span *ngIf="!uploading">Add {{ newImageFiles.length || 0 }} Image(s)</span>
+        <span *ngIf="uploading">
+          <i class="fas fa-spinner fa-spin"></i> Uploading... (Please wait)
+        </span>
+      </button>
+      <div *ngIf="uploading" class="upload-progress">
+        <p>Uploading images to server. This may take a moment...</p>
+      </div>
+    </form>
+  </div>
+
+  <!-- Existing Images Section -->
+  <div class="images-section">
+    <h3>Existing Hotel Images ({{ hotelImages.length }})</h3>
+    
+    <div *ngIf="loading && hotelImages.length === 0" class="loading">
+      <i class="fas fa-spinner fa-spin"></i> Loading images...
+    </div>
+    
+    <div *ngIf="!loading && hotelImages.length === 0" class="no-images">
+      <p>No hotel images found. Add your first image above.</p>
+    </div>
+    
+    <div class="images-grid" *ngIf="hotelImages.length > 0 && !loading">
+      <div *ngFor="let image of hotelImages" class="image-card card">
+        <div class="image-display">
+          <img [src]="getImageUrl(image)" [alt]="image.description || 'Hotel image'" (error)="onImageError($event)" />
+        </div>
+        <div class="image-info">
+          <p *ngIf="image.description" class="description">{{ image.description }}</p>
+          <p class="meta-info">
+            <span>Order: {{ image.displayOrder }}</span>
+            <span *ngIf="image.createdAt"> | Added: {{ image.createdAt | date: 'short' }}</span>
+          </p>
+        </div>
+        <div class="image-actions">
+          <button (click)="deleteHotelImage(image.id)" class="btn btn-danger" [disabled]="loading || uploading">
+            <i class="fas fa-trash"></i> Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
