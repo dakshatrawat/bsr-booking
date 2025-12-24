@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import CryptoJS from 'crypto-js';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ApiService {
-  public static BASE_URL = 'http://localhost:9090/api';
+  public static BASE_URL = environment.apiUrl;
   private static ENCRYPTION_KEY = 'dennis-encryp-key';
 
   constructor(private http: HttpClient) {}

@@ -1,107 +1,43 @@
-# BSR Booking - Hotel Reservation System
+# BSR Booking
 
-A full-stack hotel booking platform built with Angular and Spring Boot, serving 100+ users with features including room search, availability management, real-time booking confirmations, and integrated payment processing.
+Hotel booking website built with Angular and Spring Boot.
 
-## Tech Stack
+## Tech Used
 
-### Frontend
-- **Angular 19** - Frontend framework
-- **TypeScript** - Programming language
-- **RxJS** - Reactive programming
-- **Bootstrap/CSS3** - Styling and responsive design
-
-### Backend
-- **Spring Boot** - Java framework
-- **Spring Security** - Authentication & Authorization
-- **JWT** - Token-based authentication
-- **JPA/Hibernate** - ORM for database operations
-- **MySQL** - Database
-- **Razorpay** - Payment gateway integration
-- **Spring Mail** - Email notifications
+Frontend: Angular, TypeScript
+Backend: Spring Boot, Java, MySQL
+Payment: Razorpay
+Email: Spring Mail
 
 ## Features
 
-- 🔐 User Authentication & Authorization (JWT-based)
-- 🏨 Room Management & Search
-- 📅 Booking Management with Date Selection
-- 💳 Razorpay Payment Gateway Integration
-- 📧 Automated Email Notifications
-- 🖼️ Hotel Image Management
-- 👤 User Profile Management
-- 📱 Responsive Mobile-First Design
-- 🔒 Role-Based Access Control (Admin/Customer)
+- User login and registration
+- Room search and booking
+- Payment integration
+- Email notifications
+- Admin panel for managing rooms and bookings
+- Hotel image management
 
-## Project Structure
+## Setup
 
-```
-project/
-├── angular-frontend/     # Angular frontend application
-│   ├── src/
-│   │   └── app/
-│   └── package.json
-│
-└── spring-backend/       # Spring Boot backend application
-    ├── src/main/java/
-    └── pom.xml
-```
+### Backend
 
-## Getting Started
+1. Go to spring-backend folder
+2. Update database settings in application.properties
+3. Run: ./mvnw spring-boot:run
+4. Backend runs on http://localhost:9090
 
-### Prerequisites
-- Node.js (v18+)
-- Angular CLI
-- Java 17+
-- Maven
-- MySQL 8+
+### Frontend
 
-### Backend Setup
+1. Go to angular-frontend folder
+2. Run: npm install
+3. Run: ng serve
+4. Frontend runs on http://localhost:4200
 
-1. Navigate to backend directory:
-```bash
-cd spring-backend
-```
+## API
 
-2. Configure database in `src/main/resources/application.properties`
-
-3. Run the application:
-```bash
-./mvnw spring-boot:run
-```
-
-Backend will run on `http://localhost:9090`
-
-### Frontend Setup
-
-1. Navigate to frontend directory:
-```bash
-cd angular-frontend
-```
-
-2. Install dependencies:
-```bash
-npm install
-```
-
-3. Start development server:
-```bash
-ng serve
-```
-
-Frontend will run on `http://localhost:4200`
-
-## API Endpoints
-
-- Authentication: `/api/auth/**`
-- Rooms: `/api/rooms/**`
-- Bookings: `/api/bookings/**`
-- Payments: `/api/payments/**`
-- Hotel Images: `/api/hotel-images/**`
-
-## License
-
-This project is private and proprietary.
-
-## Author
-
-Dakshat Rawat
-
+- /api/auth/** - Authentication
+- /api/rooms/** - Room operations
+- /api/bookings/** - Booking operations
+- /api/payments/** - Payment processing
+- /api/hotel-images/** - Image management

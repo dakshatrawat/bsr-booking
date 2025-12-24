@@ -1,0 +1,13 @@
+{
+  "buildCommand": "cd angular-frontend && npm run build:prod",
+  "outputDirectory": "angular-frontend/dist/hotel-angular/browser",
+  "installCommand": "cd angular-frontend && npm install",
+  "framework": null,
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
+
