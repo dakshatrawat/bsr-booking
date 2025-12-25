@@ -9,7 +9,7 @@
   background: var(--pure-white);
   border-bottom: 1px solid var(--border-color);
   box-shadow: var(--shadow-sm);
-  z-index: 1000;
+  z-index: var(--z-sticky);
   height: 64px;
 }
 
@@ -151,30 +151,124 @@
   }
 }
 
+/* Hamburger Menu Button (Mobile Only) */
+.hamburger-menu {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--spacing-xs);
+  color: var(--text-primary);
+  font-size: 24px;
+  transition: color 0.2s ease;
+  z-index: calc(var(--z-sticky) + 1);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.hamburger-menu:hover {
+  color: var(--skyscanner-blue);
+}
+
+.hamburger-menu:focus {
+  outline: none;
+  color: var(--skyscanner-blue);
+}
+
 @media (max-width: 768px) {
   .nav-container {
-    flex-direction: column;
-    height: auto;
-    padding: var(--mobile-spacing-sm);
-    gap: var(--mobile-spacing-xs);
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-sm) var(--container-padding);
+    height: 60px;
+    position: relative;
   }
 
   .navbar {
-    height: auto;
+    height: 60px;
+    min-height: 60px;
   }
 
-  .nav-menu {
+  /* Show hamburger menu */
+  .hamburger-menu {
+    display: flex;
+    align-items: center;
     justify-content: center;
-    width: 100%;
-    gap: var(--mobile-spacing-xs);
+    width: 44px;
+    height: 44px;
+    border-radius: var(--border-radius);
   }
 
-  .nav-menu a {
-    padding: var(--mobile-spacing-xs) var(--mobile-spacing-sm);
-    font-size: 13px;
+  /* Hide nav menu by default on mobile */
+  .nav-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    background: var(--pure-white);
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: none;
+    border-top: 1px solid var(--border-color);
+    padding: 0;
+    margin: 0;
+    gap: 0;
+    z-index: var(--z-dropdown);
+  }
+
+  /* Show menu when open */
+  .nav-menu.menu-open {
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+    padding: var(--spacing-xs) 0;
+  }
+
+  .nav-menu li {
+    width: 100%;
+    margin: 0;
+  }
+
+  .nav-menu a,
+  .nav-menu .logout-btn {
+    width: 100%;
+    padding: var(--spacing-md) var(--container-padding);
+    font-size: var(--font-size-base);
+    justify-content: flex-start;
+    border-radius: 0;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .nav-menu a:last-child,
+  .nav-menu .logout-btn:last-child {
+    border-bottom: none;
+  }
+
+  .nav-menu a:hover,
+  .nav-menu .logout-btn:hover {
+    background-color: var(--gray-50);
+    color: var(--skyscanner-blue);
+  }
+
+  .nav-menu a.active {
+    background-color: var(--skyscanner-blue-light);
+    color: var(--skyscanner-blue);
+    font-weight: 600;
   }
 
   .brand-name {
-    font-size: 18px;
+    font-size: 16px;
+  }
+
+  .brand-link {
+    gap: var(--spacing-xs);
+  }
+
+  .brand-link i {
+    font-size: 1.1rem;
   }
 }

@@ -139,6 +139,10 @@ export class ApiService {
     return this.http.get(`${ApiService.BASE_URL}/rooms/${roomId}`);
   }
 
+  getBookedDates(roomId: string): Observable<any> {
+    return this.http.get(`${ApiService.BASE_URL}/rooms/${roomId}/booked-dates`);
+  }
+
   deleteRoom(roomId: string): Observable<any> {
     return this.http.delete(`${ApiService.BASE_URL}/rooms/delete/${roomId}`, {
       headers: this.getHeader(),

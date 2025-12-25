@@ -79,22 +79,26 @@ p {
   font-size: 14px;
 }
 
-/* Buttons */
+/* Buttons - Mobile First */
 button,
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  padding: 12px 24px;
-  font-size: 14px;
+  gap: 8px;
+  padding: 12px 16px;
+  min-height: var(--button-height);
+  font-size: var(--font-size-base);
   font-weight: 600;
-  border-radius: 4px;
+  border-radius: var(--border-radius);
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
   text-decoration: none;
   font-family: inherit;
+  box-sizing: border-box;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .btn-primary,
@@ -129,7 +133,7 @@ button[type="submit"]:hover {
   color: var(--skyscanner-blue);
 }
 
-/* Inputs */
+/* Inputs - Mobile First */
 input[type="text"],
 input[type="email"],
 input[type="password"],
@@ -140,13 +144,24 @@ select,
 textarea {
   width: 100%;
   padding: 12px 16px;
+  height: var(--input-height);
   border: 1px solid var(--border-color);
-  border-radius: 4px;
-  font-size: 14px;
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-base);
   transition: all 0.2s ease;
   background-color: var(--pure-white);
   color: var(--text-primary);
   font-family: inherit;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236B7280' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  padding-right: 40px;
 }
 
 input:focus,
@@ -186,62 +201,103 @@ input::placeholder {
   padding: 40px 0;
 }
 
-/* Mobile-First Responsive Spacing */
+/* Mobile-First Base Styles (default) */
+body {
+  font-size: var(--font-size-base);
+}
+
+.section {
+  padding: var(--section-padding);
+}
+
+.container {
+  width: 100%;
+  max-width: 100%;
+  padding: 0 var(--container-padding);
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* Mobile-specific global spacing fixes */
 @media (max-width: 768px) {
-  .section {
-    padding: var(--mobile-spacing-xl) 0;
+  /* Ensure all pages have proper top spacing below navbar */
+  .container {
+    padding-top: var(--spacing-sm);
+  }
+
+  /* Prevent content overlap */
+  section {
+    padding-top: var(--spacing-lg);
+    padding-bottom: var(--spacing-lg);
+  }
+
+  /* Standardize card spacing */
+  .card {
+    margin-bottom: var(--spacing-md);
+  }
+}
+
+.card {
+  background: var(--pure-white);
+  border-radius: var(--border-radius);
+  padding: var(--card-padding);
+  border: 1px solid var(--border-color);
+  box-sizing: border-box;
+}
+
+h1 {
+  font-size: var(--font-size-xxl);
+  margin-bottom: var(--spacing-md);
+}
+
+h2 {
+  font-size: var(--font-size-xl);
+  margin-bottom: var(--spacing-md);
+}
+
+h3 {
+  font-size: var(--font-size-lg);
+  margin-bottom: var(--spacing-sm);
+}
+
+/* Desktop Adaptations */
+@media (min-width: 769px) {
+  :root {
+    --container-padding: 24px;
+    --section-padding: 40px 0;
+    --card-padding: 24px;
   }
 
   .container {
-    padding: 0 var(--mobile-spacing-md);
-  }
-
-  .card {
-    padding: var(--mobile-spacing-md);
-    margin-bottom: var(--mobile-spacing-md);
+    max-width: 1200px;
   }
 
   h1 {
-    font-size: 24px;
-    margin-bottom: var(--mobile-spacing-md);
+    font-size: 32px;
   }
 
   h2 {
-    font-size: 20px;
-    margin-bottom: var(--mobile-spacing-md);
-  }
-
-  h3 {
-    font-size: 18px;
-    margin-bottom: var(--mobile-spacing-sm);
-  }
-
-  p {
-    margin-bottom: var(--mobile-spacing-sm);
+    font-size: 28px;
   }
 
   button,
   .btn {
-    padding: var(--mobile-spacing-sm) var(--mobile-spacing-md);
-    width: 100%;
-    margin-top: var(--mobile-spacing-sm);
-  }
-
-  input[type="text"],
-  input[type="email"],
-  input[type="password"],
-  input[type="date"],
-  input[type="number"],
-  input[type="tel"],
-  select,
-  textarea {
-    padding: var(--mobile-spacing-sm) var(--mobile-spacing-md);
-    margin-bottom: var(--mobile-spacing-sm);
+    width: auto;
+    padding: 12px 24px;
   }
 }
 
-/* Mobile-First Spacing Variables */
+/* Mobile-First Design System */
 :root {
+  /* Spacing System (8px base unit) */
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-xxl: 40px;
+  
+  /* Mobile Spacing (default) */
   --mobile-spacing-xs: 8px;
   --mobile-spacing-sm: 12px;
   --mobile-spacing-md: 16px;
@@ -249,10 +305,44 @@ input::placeholder {
   --mobile-spacing-xl: 32px;
   --mobile-spacing-xxl: 40px;
   
-  --mobile-section-padding: 24px 0;
-  --mobile-container-padding: 0 16px;
-  --mobile-card-padding: 16px;
-  --mobile-gap: 16px;
+  /* Standard Component Sizes */
+  --input-height: 44px;
+  --button-height: 44px;
+  --touch-target-min: 44px;
+  --border-radius: 4px;
+  --border-radius-lg: 8px;
+  
+  /* Typography */
+  --font-size-xs: 11px;
+  --font-size-sm: 12px;
+  --font-size-base: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 20px;
+  --font-size-xxl: 24px;
+  
+  /* Layout */
+  --container-padding: 16px;
+  --section-padding: 24px 0;
+  --card-padding: 16px;
+  --form-gap: 12px;
+  
+  /* Z-Index System */
+  --z-base: 1;
+  --z-dropdown: 1000;
+  --z-sticky: 1001;
+  --z-modal: 2000;
+  --z-tooltip: 3000;
+  --z-chatbot: 9999;
+  
+  /* Navbar Height - Single source of truth */
+  --navbar-height-desktop: 64px;
+  --navbar-height-mobile: 60px;
+  --content-offset-desktop: 64px;
+  --content-offset-mobile: 60px; /* Navbar height (60px) */
+  
+  /* Mobile page top margin */
+  --mobile-page-top-margin: var(--spacing-md); /* 16px margin before topmost section */
 }
 
 .text-center {

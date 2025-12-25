@@ -2,13 +2,21 @@
 
 .admin {
   max-width: 900px;
-  margin: 80px auto 40px;
-  padding: 32px;
-  border-radius: 4px;
+  margin: 0 auto var(--spacing-xl); /* Removed top margin - handled by global layout */
+  padding: var(--spacing-xl);
+  border-radius: var(--border-radius);
   background-color: var(--pure-white);
   box-shadow: var(--shadow);
   border: 1px solid var(--border-color);
   text-align: center;
+  box-sizing: border-box;
+}
+
+/* Mobile: Add top margin */
+@media (max-width: 768px) {
+  .admin {
+    margin-top: var(--mobile-page-top-margin);
+  }
 }
 
 h1 {
@@ -44,8 +52,8 @@ button:hover {
 /* Responsive */
 @media (max-width: 768px) {
   .admin {
-    margin: 64px var(--mobile-spacing-md) var(--mobile-spacing-xl);
-    padding: var(--mobile-spacing-lg);
+    margin: 0 var(--container-padding) var(--spacing-xl); /* Removed top margin - handled by global layout */
+    padding: var(--spacing-lg);
   }
 
   h1 {

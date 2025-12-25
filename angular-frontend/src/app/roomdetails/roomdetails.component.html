@@ -16,25 +16,28 @@
   
     <!-- Booking Controls -->
     <div class="booking-info">
-      <button class="book-now-button" (click)="showDatePicker = true">
-        Select Dates
+      <button class="book-now-button" (click)="showDatePicker = !showDatePicker">
+        {{ showDatePicker ? 'Hide Calendar' : 'Select Dates' }}
       </button>
   
-      <!-- Date Picker -->
-      <div *ngIf="showDatePicker" class="date-picker-container">
-        <div class="date-picker">
-          <label>Choose Check-in Date</label>
-          <input type="date" [(ngModel)]="checkInDate" [min]="minDate" />
-        </div>
-  
-        <div class="date-picker">
-          <label>Choose Check-out Date</label>
-          <input type="date" [(ngModel)]="checkOutDate" [min]="checkInDate" />
-        </div>
-  
-        <button (click)="handleConfirmation()" class="proceed-button">Proceed</button>
+      <!-- Calendar Component -->
+      <div *ngIf="showDatePicker" class="calendar-wrapper">
+        <app-calendar 
+          [roomId]="roomId" 
+          [showRoomBookings]="true"
+          (datesSelected)="onDatesSelected($event)">
+        </app-calendar>
         
-        <!-- Success and Error Messages - Below Calendar -->
+        <div *ngIf="selectedDates.length > 0" class="selected-dates-info">
+          <p><strong>Selected Dates ({{ selectedDates.length }}):</strong></p>
+          <p>{{ selectedDates.join(', ') }}</p>
+        </div>
+        
+        <button (click)="handleConfirmation()" class="proceed-button" [disabled]="selectedDates.length === 0">
+          Proceed
+        </button>
+        
+        <!-- Success and Error Messages -->
         <p *ngIf="message" class="success-message">{{ message }}</p>
         <p *ngIf="error" class="error-message">{{ error }}</p>
       </div>
@@ -42,8 +45,9 @@
       <!-- Booking Preview and Submit -->
       <div *ngIf="showBookingPreview" class="preview-container">
         <h3>Booking Preview</h3>
-        <p><strong>Check-in Date:</strong> {{ checkInDate | date: 'yyyy-MM-dd' }}</p>
-        <p><strong>Check-out Date:</strong> {{ checkOutDate | date: 'yyyy-MM-dd' }}</p>
+        <p><strong>Selected Dates:</strong> {{ selectedDates.join(', ') }}</p>
+        <p><strong>Check-in Date:</strong> {{ selectedDates.length > 0 ? selectedDates.sort()[0] : 'N/A' }}</p>
+        <p><strong>Check-out Date:</strong> {{ selectedDates.length > 0 ? selectedDates.sort()[selectedDates.length - 1] : 'N/A' }}</p>
         <p><strong>Total Days To Stay:</strong> {{ totalDaysToStay }}</p>
         <p><strong>Total Price:</strong> ${{ totalPrice }}</p>
         <button (click)="acceptBooking()" class="confirm-booking-button">Confirm and Book</button>

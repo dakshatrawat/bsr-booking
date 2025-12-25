@@ -1,43 +1,50 @@
 <nav class="navbar">
   <div class="nav-container">
     <div class="brand">
-      <a routerLink="/home" class="brand-link">
+      <a routerLink="/home" class="brand-link" (click)="onNavClick()">
         <i class="fas fa-mountain"></i>
         <span class="brand-name">Bhagat Singh Resort</span>
       </a>
     </div>
     
-    <ul class="nav-menu">
-      <li><a routerLink="/home" routerLinkActive="active">
+    <!-- Hamburger Menu Button (Mobile Only) -->
+    <button class="hamburger-menu" (click)="toggleMenu()" aria-label="Toggle menu" type="button">
+      <i class="fas fa-bars" *ngIf="!isMenuOpen"></i>
+      <i class="fas fa-times" *ngIf="isMenuOpen"></i>
+    </button>
+    
+    <!-- Navigation Menu -->
+    <ul class="nav-menu" [class.menu-open]="isMenuOpen" #navMenu>
+      <li><a routerLink="/home" routerLinkActive="active" (click)="onNavClick()">
         <i class="fas fa-home"></i>
         <span>Home</span>
       </a></li>
-      <li><a routerLink="/rooms" routerLinkActive="active">
+      <li><a routerLink="/rooms" routerLinkActive="active" (click)="onNavClick()">
         <i class="fas fa-bed"></i>
         <span>Rooms</span>
       </a></li>
-      <li><a routerLink="/find-booking" routerLinkActive="active">
+      <li><a routerLink="/find-booking" routerLinkActive="active" (click)="onNavClick()">
         <i class="fas fa-search"></i>
         <span>Find Booking</span>
       </a></li>
-      <li><a routerLink="/about" routerLinkActive="active">
+      <li><a routerLink="/about" routerLinkActive="active" (click)="onNavClick()">
         <i class="fas fa-info-circle"></i>
         <span>About</span>
       </a></li>
 
-      <li *ngIf="isCustomer"><a routerLink="/profile" routerLinkActive="active">
+      <li *ngIf="isCustomer"><a routerLink="/profile" routerLinkActive="active" (click)="onNavClick()">
         <i class="fas fa-user"></i>
         <span>Profile</span>
       </a></li>
-      <li *ngIf="isAdmin"><a routerLink="/admin" routerLinkActive="active">
+      <li *ngIf="isAdmin"><a routerLink="/admin" routerLinkActive="active" (click)="onNavClick()">
         <i class="fas fa-cog"></i>
         <span>Admin</span>
       </a></li>
-      <li *ngIf="!isAuthemticated"><a routerLink="/login" routerLinkActive="active" class="btn-login">
+      <li *ngIf="!isAuthemticated"><a routerLink="/login" routerLinkActive="active" class="btn-login" (click)="onNavClick()">
         <i class="fas fa-sign-in-alt"></i>
         <span>Login</span>
       </a></li>
-      <li *ngIf="!isAuthemticated"><a routerLink="/register" routerLinkActive="active" class="btn-register">
+      <li *ngIf="!isAuthemticated"><a routerLink="/register" routerLinkActive="active" class="btn-register" (click)="onNavClick()">
         <i class="fas fa-user-plus"></i>
         <span>Register</span>
       </a></li>

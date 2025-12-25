@@ -11,8 +11,8 @@
             <option value="">All</option>
             <option *ngFor="let type of roomTypes" [value]="type">{{ type }}</option>
           </select>
-          <button (click)="navigateToAddRoom()">Add Room</button>
         </div>
+        <button (click)="navigateToAddRoom()">Add Room</button>
       </div>
     
       <!-- Room Result Component -->

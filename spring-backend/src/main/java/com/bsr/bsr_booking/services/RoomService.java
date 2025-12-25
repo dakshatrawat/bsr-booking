@@ -18,4 +18,5 @@ public interface RoomService {
     Response getAvailableRooms(LocalDate checkInDate, LocalDate checkOutDate, RoomType roomType);
     List<RoomType> getAllRoomTypes();
     Response searchRoom(String input);
+    Response getBookedDates(Long roomId);
 }

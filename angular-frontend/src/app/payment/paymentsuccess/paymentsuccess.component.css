@@ -2,13 +2,21 @@
 
 div {
   text-align: center;
-  padding: 60px 32px;
+  padding: 60px var(--spacing-xl);
   background-color: var(--pure-white);
-  border-radius: 4px;
+  border-radius: var(--border-radius);
   box-shadow: var(--shadow);
   border: 1px solid var(--border-color);
   max-width: 600px;
-  margin: 80px auto 40px;
+  margin: 0 auto var(--spacing-xl); /* Removed top margin - handled by global layout */
+  box-sizing: border-box;
+}
+
+/* Mobile: Add top margin */
+@media (max-width: 768px) {
+  div {
+    margin-top: var(--mobile-page-top-margin);
+  }
 }
 
 h1 {

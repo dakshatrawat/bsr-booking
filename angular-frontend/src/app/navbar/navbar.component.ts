@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, HostListener, ElementRef, ViewChild } from '@angular/core';
 import { ApiService } from '../service/api.service';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
@@ -11,8 +11,11 @@ import { Router, RouterLink, RouterLinkActive } from '@angular/router';
   styleUrl: './navbar.component.css'
 })
 export class NavbarComponent {
+  isMenuOpen: boolean = false;
 
-  constructor(private router: Router, private apiService: ApiService){}
+  @ViewChild('navMenu') navMenu!: ElementRef;
+
+  constructor(private router: Router, private apiService: ApiService, private elementRef: ElementRef){}
 
   get isAuthemticated():boolean{
     return this.apiService.isAuthenticated();
@@ -26,12 +29,33 @@ export class NavbarComponent {
     return this.apiService.isAdmin();
   }
 
+  toggleMenu(): void {
+    this.isMenuOpen = !this.isMenuOpen;
+  }
+
+  closeMenu(): void {
+    this.isMenuOpen = false;
+  }
+
   handleLogout(): void{
     const isLogout = window.confirm("Are you sure you want to logout? ")
     if (isLogout) {
       this.apiService.logout();
       this.router.navigate(['/home'])
+      this.closeMenu();
     }
   }
 
+  // Close menu when clicking outside
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.elementRef.nativeElement.contains(event.target)) {
+      this.closeMenu();
+    }
+  }
+
+  // Close menu when route changes
+  onNavClick(): void {
+    this.closeMenu();
+  }
 }

@@ -3,43 +3,49 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../service/api.service';
 import { ActivatedRoute, Router } from '@angular/router';
-
-
+import { CalendarComponent } from '../calendar/calendar.component';
+import { BookingDateService } from '../booking-date.service';
 
 @Component({
   selector: 'app-roomdetails',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, CalendarComponent],
   templateUrl: './roomdetails.component.html',
   styleUrl: './roomdetails.component.css'
 })
 
 export class RoomdetailsComponent {
 
-  constructor(private apiService: ApiService,
-    private route:ActivatedRoute,
-    private router: Router
+  constructor(
+    private apiService: ApiService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private bookingDateService: BookingDateService
   ){}
 
   room: any = null;
   roomId: any = '';
-  checkInDate: Date | null = null;
-  checkOutDate: Date | null = null;
+  selectedDates: string[] = [];
   totalPrice: number = 0;
   totalDaysToStay: number = 0;
-  showDatePicker:boolean = false;
+  showDatePicker: boolean = false;
   showBookingPreview: boolean = false;
   message: any = null;
   error: any = null;
-
-  //minimum date for the check-in-date
-  minDate: string = new Date().toISOString().split('T')[0] //get the current date in this format "yyy-mm-dd"
   
   ngOnInit():void{
     this.roomId = this.route.snapshot.paramMap.get('id');
     
     if (this.roomId) {
-      this.fetchRoomDetails(this.roomId)
+      this.fetchRoomDetails(this.roomId);
     }
+
+    // Load selected dates from service
+    this.selectedDates = this.bookingDateService.getSelectedDates();
+    
+    // Subscribe to date changes
+    this.bookingDateService.selectedDates$.subscribe(dates => {
+      this.selectedDates = dates;
+    });
   }
 
   fetchRoomDetails(roomId: string): void{
@@ -61,29 +67,22 @@ export class RoomdetailsComponent {
     }, 5000)
   }
 
-  calculateTotalPrice():number {
-    if (!this.checkInDate || !this.checkOutDate) return 0;
+  onDatesSelected(dates: string[]): void {
+    this.selectedDates = dates;
+  }
 
-    //convert it date
-    const checkIn = new Date(this.checkInDate)
-    const checkOut = new Date(this.checkOutDate)
+  calculateTotalPrice(): number {
+    if (this.selectedDates.length === 0) return 0;
 
-    if (isNaN(checkIn.getTime()) || isNaN(checkOut.getTime())) {
-      this.showError("Invalid Date selected")
-      return 0;
-    }
+    // Calculate days based on selected dates
+    this.totalDaysToStay = this.selectedDates.length;
 
-    const oneDay = 24 * 60 * 60 * 1000; //milisec
-    const totalDays = Math.round(Math.abs((checkOut.getTime() - checkIn.getTime()) / oneDay)); //differenc in days
-
-    this.totalDaysToStay = totalDays;
-
-    return this.room?.pricePerNight * totalDays || 0;
+    return this.room?.pricePerNight * this.totalDaysToStay || 0;
   }
 
   handleConfirmation(): void{
-    if(!this.checkInDate || !this.checkOutDate){
-      this.showError("Please select both check-in and check-out dates");
+    if(this.selectedDates.length === 0){
+      this.showError("Please select at least one date");
       return;
     }
 
@@ -92,11 +91,16 @@ export class RoomdetailsComponent {
   }
 
   acceptBooking():void{
-    if(!this.room) return
+    if(!this.room || this.selectedDates.length === 0) return
 
-    //Ensure the check in sarte and check out date are well formatted
-    const formattedCheckInDate = this.checkInDate? new Date(this.checkInDate).toLocaleDateString('en-CA'):'';
-    const formattedCheckOutDate = this.checkOutDate? new Date(this.checkOutDate).toLocaleDateString('en-CA'): '';
+    // Get check-in (earliest) and check-out (latest) dates from selected dates
+    const sortedDates = [...this.selectedDates].sort();
+    const formattedCheckInDate = sortedDates[0];
+    
+    // For check-out, add one day to the last selected date (exclusive)
+    const lastDate = new Date(sortedDates[sortedDates.length - 1]);
+    lastDate.setDate(lastDate.getDate() + 1);
+    const formattedCheckOutDate = lastDate.toISOString().split('T')[0];
 
     console.log("check in date is: "+ formattedCheckInDate);
     console.log("check out date is: " + formattedCheckOutDate);

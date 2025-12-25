@@ -28,4 +28,12 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     boolean isRoomAvailable(@Param("roomId") Long roomId,
                             @Param("checkInDate") LocalDate checkInDate,
                             @Param("checkOutDate") LocalDate checkOutDate);
+
+    @Query("""
+            SELECT b FROM Booking b
+            WHERE b.room.id = :roomId
+              AND b.bookingStatus IN ('BOOKED', 'CHECKED_IN')
+              ORDER BY b.checkInDate ASC
+            """)
+    List<Booking> findBookingsByRoomId(@Param("roomId") Long roomId);
 }

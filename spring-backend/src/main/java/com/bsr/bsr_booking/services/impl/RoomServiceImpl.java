@@ -2,10 +2,12 @@ package com.bsr.bsr_booking.services.impl;
 
 import com.bsr.bsr_booking.dtos.Response;
 import com.bsr.bsr_booking.dtos.RoomDTO;
+import com.bsr.bsr_booking.entities.Booking;
 import com.bsr.bsr_booking.entities.Room;
 import com.bsr.bsr_booking.enums.RoomType;
 import com.bsr.bsr_booking.exceptions.InvalidBookingStateAndDateException;
 import com.bsr.bsr_booking.exceptions.NotFoundException;
+import com.bsr.bsr_booking.repositories.BookingRepository;
 import com.bsr.bsr_booking.repositories.RoomRepository;
 import com.bsr.bsr_booking.services.RoomService;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -30,6 +33,7 @@ public class RoomServiceImpl implements RoomService {
 
 
     private final RoomRepository roomRepository;
+    private final BookingRepository bookingRepository;
     private final ModelMapper modelMapper;
 
     //image directory for storing room images
@@ -185,6 +189,36 @@ public class RoomServiceImpl implements RoomService {
                 .status(200)
                 .message("success")
                 .rooms(roomDTOList)
+                .build();
+    }
+
+    @Override
+    public Response getBookedDates(Long roomId) {
+        // Verify room exists
+        if (!roomRepository.existsById(roomId)) {
+            throw new NotFoundException("Room not found");
+        }
+
+        // Get all bookings for this room
+        List<Booking> bookings = bookingRepository.findBookingsByRoomId(roomId);
+
+        // Extract all booked dates (including all dates in each booking range)
+        List<String> bookedDates = new ArrayList<>();
+        for (Booking booking : bookings) {
+            LocalDate start = booking.getCheckInDate();
+            LocalDate end = booking.getCheckOutDate();
+            // Add all dates from checkIn to checkOut (exclusive of checkOut)
+            LocalDate current = start;
+            while (current.isBefore(end)) {
+                bookedDates.add(current.toString()); // Convert to string format "yyyy-MM-dd"
+                current = current.plusDays(1);
+            }
+        }
+
+        return Response.builder()
+                .status(200)
+                .message("success")
+                .bookedDates(bookedDates)
                 .build();
     }
 

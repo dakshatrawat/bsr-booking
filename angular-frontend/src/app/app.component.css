@@ -17,19 +17,60 @@ app-navbar {
   left: 0;
   right: 0;
   width: 100%;
-  z-index: 1000;
+  z-index: var(--z-sticky);
+}
+
+/* Global Content Wrapper - Single source of truth for navbar offset */
+app-back-button {
+  display: block !important;
+  width: 100%;
+  position: relative;
+  z-index: 4999 !important;
+  flex-shrink: 0;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 router-outlet {
   flex: 1;
-  margin-top: 64px; /* Account for fixed navbar */
   width: 100%;
+  overflow-x: hidden;
 }
 
-/* Mobile adjustments */
-@media (max-width: 768px) {
+/* Desktop: Single navbar offset */
+@media (min-width: 769px) {
+  app-back-button {
+    margin-top: var(--content-offset-desktop);
+  }
+
   router-outlet {
-    margin-top: 64px; /* Keep consistent navbar height on mobile */
+    margin-top: 0;
+  }
+  
+  /* Home page exception - hero section starts right below navbar (back button hidden) */
+  router-outlet:has(.home) {
+    margin-top: var(--content-offset-desktop);
+  }
+}
+
+/* Mobile: Single navbar offset - back button hidden */
+@media (max-width: 768px) {
+  app-back-button {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  router-outlet {
+    margin-top: var(--content-offset-mobile); /* Content starts below navbar */
+  }
+  
+  /* Home page exception - hero section starts right below navbar */
+  router-outlet:has(.home) {
+    margin-top: var(--content-offset-mobile);
   }
 }
 

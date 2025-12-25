@@ -1,0 +1,12 @@
+<div 
+  *ngIf="showBackButton" 
+  class="back-button-container">
+  <button 
+    class="back-button"
+    (click)="goBack()"
+    aria-label="Go back"
+    type="button">
+    <i class="fas fa-arrow-left"></i>
+    <span class="back-text">Back</span>
+  </button>
+</div>

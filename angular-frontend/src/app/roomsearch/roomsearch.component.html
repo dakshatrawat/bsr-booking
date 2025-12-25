@@ -1,37 +1,36 @@
 <!-- Error Message -->
 <p *ngIf="error" class="error">{{ error }}</p>
 <div class="container">
-  <!-- Check-in Date Picker -->
-  <div class="field">
-    <label>Check-in Date</label>
-    <input
-      type="date"
-      [(ngModel)]="startDate"
-      [min]="minDate"
-      placeholder="Select Check-In Date"
-    />
-  </div>
-
-  <!-- Check-out Date Picker -->
-  <div class="field">
-    <label>Check-Out Date</label>
-    <input
-      type="date"
-      [(ngModel)]="endDate"
-      [min]="startDate"
-      placeholder="Select Check-Out Date"
-    />
-  </div>
-
   <!-- Room Type Selection -->
   <div class="field">
     <label>Room Type</label>
-    <select [(ngModel)]="roomType">
+    <select [(ngModel)]="roomType" (ngModelChange)="onRoomTypeChange()">
       <option disabled value="">Select Room Type</option>
       <option *ngFor="let type of roomTypes" [value]="type">
         {{ type }}
       </option>
     </select>
+  </div>
+
+  <!-- Calendar Toggle Button -->
+  <div #calendarField class="field calendar-field">
+    <label>Select Dates</label>
+    <button type="button" class="calendar-toggle-btn" (click)="toggleCalendar()">
+      <i class="fas fa-calendar"></i> 
+      {{ showCalendar ? 'Hide Calendar' : 'Select Dates' }}
+    </button>
+
+    <!-- Calendar Component -->
+    <div *ngIf="showCalendar" class="calendar-wrapper">
+      <app-calendar 
+        [unavailableDates]="unavailableDates"
+        (datesSelected)="onDatesSelected($event)">
+      </app-calendar>
+      <div *ngIf="selectedDates.length > 0" class="selected-dates-info">
+        <p><strong>Selected Dates ({{ selectedDates.length }}):</strong></p>
+        <p>{{ selectedDates.join(', ') }}</p>
+      </div>
+    </div>
   </div>
 
   <!-- Search Button -->

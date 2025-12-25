@@ -103,4 +103,9 @@ public class RoomController {
     public ResponseEntity<Response> searchRoom(@RequestParam String input){
         return ResponseEntity.ok(roomService.searchRoom(input));
     }
+
+    @GetMapping("/{id}/booked-dates")
+    public ResponseEntity<Response> getBookedDates(@PathVariable Long id){
+        return ResponseEntity.ok(roomService.getBookedDates(id));
+    }
 }

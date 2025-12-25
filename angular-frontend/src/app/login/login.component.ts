@@ -23,6 +23,11 @@ export class LoginComponent {
 
   }
   error: any = null;
+  showPassword: boolean = false;
+
+  togglePassword(): void {
+    this.showPassword = !this.showPassword;
+  }
 
   async handleSubmit(){
 

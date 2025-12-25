@@ -52,5 +52,8 @@ public class Response {
     private HotelImageDTO hotelImage;
     private List<HotelImageDTO> hotelImages;
 
+    //Booked dates output
+    private List<String> bookedDates;
+
     private final LocalDateTime timestamp = LocalDateTime.now();
 }

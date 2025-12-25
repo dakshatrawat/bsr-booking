@@ -2,12 +2,20 @@
 
 .container {
   max-width: 900px;
-  margin: 80px auto 40px;
-  padding: 32px;
+  margin: 0 auto var(--spacing-xl); /* Removed top margin - handled by global layout */
+  padding: var(--spacing-xl);
   font-family: inherit;
   background-color: var(--pure-white);
   border-radius: 4px;
   box-shadow: var(--shadow);
+}
+
+/* Mobile: Add top margin */
+@media (max-width: 768px) {
+  .container {
+    margin-top: var(--mobile-page-top-margin);
+  }
+}
   border: 1px solid var(--border-color);
 }
 

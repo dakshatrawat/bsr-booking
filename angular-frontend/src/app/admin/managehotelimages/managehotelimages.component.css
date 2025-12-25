@@ -1,11 +1,17 @@
 /* Skyscanner-Style Manage Hotel Images */
 
 .manage-hotel-images {
-  margin: 80px 0 40px;
-  padding: 0 16px;
+  margin: 0 auto var(--spacing-xl); /* Removed top margin - handled by global layout */
+  padding: 0 var(--container-padding);
   max-width: 1200px;
-  margin-left: auto;
-  margin-right: auto;
+  box-sizing: border-box;
+}
+
+/* Mobile: Add top margin */
+@media (max-width: 768px) {
+  .manage-hotel-images {
+    margin-top: var(--mobile-page-top-margin);
+  }
 }
 
 h2 {

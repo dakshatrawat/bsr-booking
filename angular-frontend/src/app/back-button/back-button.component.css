@@ -1,0 +1,122 @@
+/* Back Button Container - Integrated with page layout */
+.back-button-container {
+  width: 100%;
+  padding: var(--spacing-xs) var(--container-padding) var(--spacing-xs) var(--container-padding);
+  box-sizing: border-box;
+  background-color: var(--pure-white);
+  position: relative;
+  z-index: 5000 !important;
+  display: block !important;
+  min-height: 44px; /* Reduced height */
+  visibility: visible !important;
+  opacity: 1 !important;
+  overflow: visible !important;
+  margin: 0;
+}
+
+/* Back Button - Integrated Design */
+.back-button {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background-color: var(--gray-50);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-base);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  min-height: 40px;
+  -webkit-tap-highlight-color: transparent;
+  box-shadow: none;
+  visibility: visible !important;
+  opacity: 1 !important;
+  position: relative !important;
+  z-index: 5001 !important; /* High z-index to bring button to front */
+}
+
+.back-button:hover {
+  background-color: var(--gray-100);
+  border-color: var(--skyscanner-blue);
+  color: var(--skyscanner-blue);
+  box-shadow: var(--shadow-sm);
+}
+
+.back-button:active {
+  background-color: var(--gray-200);
+  transform: scale(0.98);
+}
+
+.back-button i {
+  font-size: var(--font-size-base);
+  color: var(--skyscanner-blue);
+  transition: transform 0.2s ease;
+}
+
+.back-button:hover i {
+  transform: translateX(-2px);
+}
+
+.back-button .back-text {
+  color: var(--text-primary);
+  transition: color 0.2s ease;
+}
+
+.back-button:hover .back-text {
+  color: var(--skyscanner-blue);
+}
+
+/* Mobile-First: Hide back button on mobile */
+@media (max-width: 768px) {
+  .back-button-container {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .back-button {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+  }
+}
+
+/* Desktop: Subtle, integrated styling */
+@media (min-width: 769px) {
+  .back-button-container {
+    padding: var(--spacing-md) var(--container-padding) 0 var(--container-padding);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .back-button {
+    padding: 10px 16px;
+    background-color: transparent;
+    border: none;
+  }
+
+  .back-button:hover {
+    background-color: var(--gray-50);
+    border: none;
+    box-shadow: none;
+  }
+}
+
+/* Tablet adjustments */
+@media (max-width: 968px) and (min-width: 769px) {
+  .back-button-container {
+    padding: var(--spacing-sm) var(--container-padding) 0 var(--container-padding);
+  }
+
+  .back-button {
+    padding: 10px 14px;
+  }
+}
+

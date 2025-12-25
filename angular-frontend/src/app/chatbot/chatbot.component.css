@@ -23,7 +23,7 @@
   position: fixed;
   bottom: 20px;
   right: 20px;
-  z-index: 9999;
+  z-index: var(--z-chatbot);
   background: linear-gradient(135deg, var(--skyscanner-blue) 0%, var(--skyscanner-blue-dark) 100%);
   color: var(--pure-white);
   border: none;
@@ -97,7 +97,7 @@
   visibility: hidden;
   transform: translateY(20px) scale(0.95);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 9998;
+  z-index: calc(var(--z-chatbot) - 1);
   overflow: hidden;
 }
 

@@ -4,12 +4,19 @@
     text-align: center;
   background-color: var(--pure-white);
   max-width: 500px;
-  margin: 80px auto 40px;
-  padding: 32px;
+  margin: 0 auto var(--spacing-xl); /* Removed top margin - handled by global layout */
+  padding: var(--spacing-xl);
   border-radius: 4px;
   box-shadow: var(--shadow);
   border: 1px solid var(--border-color);
   }
+
+/* Mobile: Add top margin */
+@media (max-width: 768px) {
+  .payment {
+    margin-top: var(--mobile-page-top-margin);
+  }
+}
   
   form {
     width: 100%;

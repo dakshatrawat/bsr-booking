@@ -25,6 +25,11 @@ export class RegisterComponent {
   }
 
   error: any = null;
+  showPassword: boolean = false;
+
+  togglePassword(): void {
+    this.showPassword = !this.showPassword;
+  }
 
   handleSubmit(){
     if (
