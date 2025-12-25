@@ -1,0 +1,47 @@
+<!-- Floating Chat Button -->
+<button 
+  class="chatbot-button" 
+  (click)="toggleChat()"
+  [class.open]="isOpen"
+  aria-label="Open AI Chatbot">
+  <span *ngIf="!isOpen" class="button-text">Book using AI</span>
+  <span *ngIf="!isOpen" class="button-text-mobile">AI</span>
+  <span *ngIf="isOpen" class="button-icon">✕</span>
+</button>
+
+<!-- Chat Interface -->
+<div class="chatbot-container" [class.open]="isOpen">
+  <div class="chatbot-header">
+    <div class="header-content">
+      <div class="header-icon">🤖</div>
+      <div class="header-text">
+        <h3>AI Booking Assistant</h3>
+        <p>Get help booking your stay</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="chatbot-messages">
+    <div class="message bot-message">
+      <div class="message-content">
+        <div class="message-text">
+          👷 This feature is currently under construction. We're working hard to bring you an AI-powered booking experience!.. Ashu Bhaiya ki londiyabaazi khatam hote he lag jaega
+        </div>
+        <div class="message-time">Just now</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chatbot-input-container">
+    <input 
+      type="text" 
+      class="chatbot-input" 
+      placeholder="Type your message..."
+      [(ngModel)]="message"
+      (keyup.enter)="sendMessage()"
+      [disabled]="true">
+    <button class="send-button" (click)="sendMessage()" [disabled]="true">
+      <span>→</span>
+    </button>
+  </div>
+</div>
