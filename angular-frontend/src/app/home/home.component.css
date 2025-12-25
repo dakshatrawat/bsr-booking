@@ -683,7 +683,10 @@
   /* CTA Card */
   .cta-card {
     padding: var(--spacing-xl) var(--spacing-lg);
-    margin: 0 var(--spacing-md);
+    margin: 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 
   /* Search Section - Better spacing */
