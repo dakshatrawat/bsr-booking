@@ -692,7 +692,10 @@
   }
 
   .search-wrapper {
-    margin: 0 var(--spacing-md);
+    margin: 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
 }
 
