@@ -12,11 +12,23 @@ Email: Spring Mail
 ## Features
 
 - User login and registration
+- Mobile-first responsive UI with consistent spacing scale
+- Hamburger menu on mobile; back button hidden on mobile, shown on desktop
+- Inline show/hide password toggle on all auth forms
 - Room search and booking
 - Payment integration
 - Email notifications
 - Admin panel for managing rooms and bookings
 - Hotel image management
+
+## Recent UI/UX updates
+
+- Standardized global spacing, typography, and z-index tokens in `styles.css`.
+- Mobile navbar converted to a hamburger menu with slide-down menu.
+- Global content offset applied so pages start below the fixed navbar.
+- Back button component available on desktop; intentionally hidden on mobile.
+- Password inputs refactored to remove wrapper shadows and include eye toggle.
+- Mobile home “Find Your Perfect Room” card width aligned with “Explore All Our Rooms”.
 
 ## Setup
 
