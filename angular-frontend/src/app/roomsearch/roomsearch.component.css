@@ -166,6 +166,30 @@ button i {
   color: var(--text-primary);
 }
 
+@media (max-width: 768px) {
+  .calendar-field.calendar-open {
+    padding-bottom: var(--spacing-md);
+    overflow: visible;
+  }
+
+  .calendar-field.calendar-open .calendar-wrapper {
+    position: relative;
+    top: 0;
+    left: 0;
+    right: 0;
+    transform: none;
+    animation: none;
+    margin-top: var(--spacing-sm);
+    max-height: 60vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+    opacity: 1;
+    visibility: visible;
+    display: block;
+    z-index: var(--z-dropdown);
+  }
+}
+
 /* Desktop Adaptations */
 @media (min-width: 769px) {
   .container {

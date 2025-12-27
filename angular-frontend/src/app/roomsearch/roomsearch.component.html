@@ -13,7 +13,7 @@
   </div>
 
   <!-- Calendar Toggle Button -->
-  <div #calendarField class="field calendar-field">
+  <div #calendarField class="field calendar-field" [class.calendar-open]="showCalendar">
     <label>Select Dates</label>
     <button type="button" class="calendar-toggle-btn" (click)="toggleCalendar()">
       <i class="fas fa-calendar"></i> 
