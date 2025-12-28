@@ -33,6 +33,7 @@ import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.beans.factory.annotation.Value;
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +46,8 @@ public class AgentService {
     private final RoomService roomService;
     private final BookingService bookingService;
     private final RoomRepository roomRepository;
+    @Value("${frontend.payment.url:https://your-frontend-domain/payment}")
+    private String frontendPaymentUrl;
 
     // Session-scoped conversation memory (in-memory; replace with distributed store if needed)
     private final Map<String, ConversationContext> sessionStore = new ConcurrentHashMap<>();
@@ -700,7 +703,13 @@ public class AgentService {
             var b = backendResponse.getBooking();
             String ref = b.getBookingReference() != null ? b.getBookingReference() : "N/A";
             String total = b.getTotalPrice() != null ? b.getTotalPrice().toString() : "N/A";
-            return "Booking created. Reference: " + ref + ", total: " + total + ". Please proceed to payment to confirm your booking.";
+            String link = frontendPaymentUrl;
+            if (StringUtils.hasText(link)) {
+                String sep = link.contains("?") ? "&" : "?";
+                link = link + sep + "bookingRef=" + ref + "&amount=" + total;
+            }
+            String clickable = StringUtils.hasText(link) ? "[Pay now](" + link + ")" : "Please proceed to payment to confirm your booking.";
+            return "Booking created. Reference: " + ref + ", total: " + total + ". " + clickable;
         }
         if (StringUtils.hasText(modelReply)) {
             return modelReply;
