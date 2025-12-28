@@ -22,12 +22,24 @@
   </div>
 
   <div class="chatbot-messages">
-    <div class="message bot-message">
+    <div *ngFor="let msg of messages" class="message" [ngClass]="{'bot-message': msg.sender === 'bot', 'user-message': msg.sender === 'user'}">
       <div class="message-content">
         <div class="message-text">
-          👷 This feature is currently under construction. We're working hard to bring you an AI-powered booking experience!
+          {{ msg.text }}
         </div>
-        <div class="message-time">Just now</div>
+        <div class="message-time">{{ msg.time | date:'shortTime' }}</div>
+      </div>
+    </div>
+
+    <div *ngIf="isLoading" class="message bot-message">
+      <div class="message-content">
+        <div class="message-text">Thinking...</div>
+      </div>
+    </div>
+
+    <div *ngIf="error" class="message bot-message">
+      <div class="message-content">
+        <div class="message-text">⚠️ {{ error }}</div>
       </div>
     </div>
   </div>
@@ -39,9 +51,10 @@
       placeholder="Type your message..."
       [(ngModel)]="message"
       (keyup.enter)="sendMessage()"
-      [disabled]="true">
-    <button class="send-button" (click)="sendMessage()" [disabled]="true">
-      <span>→</span>
+      [disabled]="isLoading">
+    <button class="send-button" (click)="sendMessage()" [disabled]="isLoading || !message.trim()">
+      <span *ngIf="!isLoading">→</span>
+      <span *ngIf="isLoading">...</span>
     </button>
   </div>
 </div>

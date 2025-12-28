@@ -45,6 +45,7 @@ public class SecurityFilter {
                 .authorizeHttpRequests(request -> request
                         .requestMatchers("/", "/api/health").permitAll()
                         .requestMatchers("/api/auth/**", "/api/rooms/**", "/api/bookings/**", "/uploads/**").permitAll()
+                        .requestMatchers("/api/agent/**").permitAll()
                         .requestMatchers("/api/hotel-images/all", "/api/hotel-images/*/image").permitAll()
                         .requestMatchers("/api/payments/**").permitAll()
                         .anyRequest().authenticated()

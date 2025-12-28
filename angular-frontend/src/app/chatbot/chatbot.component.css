@@ -160,6 +160,16 @@
   justify-content: flex-start;
 }
 
+.user-message {
+  justify-content: flex-end;
+}
+
+.user-message .message-text {
+  background: var(--skyscanner-blue);
+  color: var(--pure-white);
+  border-color: var(--skyscanner-blue);
+}
+
 .message-content {
   max-width: 85%;
 }
