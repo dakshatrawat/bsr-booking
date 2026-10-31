@@ -20,16 +20,20 @@ import { ApiService } from '../service/api.service';
 export class RoomsComponent {
 
 
+  allRooms: any[] = [];
   rooms: any[] = [];
   filteredRooms: any[] = [];
   roomTypes: string[] = [];
   selectedRoomType: string = '';
   currentPage: number = 1;
-  roomsPerPage: number = 8;
-  error: any = null;
+  roomsPerPage: number = 9;
+  loading: boolean = true;
+  showingSearchResults: boolean = false;
+  error: string | null = null;
+  readonly skeletonCards = Array.from({ length: 6 });
 
   constructor(private apiService: ApiService) {}
-  
+
   ngOnInit():void{
 
     this.fetchRooms();
@@ -37,22 +41,20 @@ export class RoomsComponent {
 
   }
 
-  showError(msg: string): void {
-    this.error = msg;
-    setTimeout(() => {
-      this.error = null;
-    }, 5000);
-  }
-
   // Fetch all rooms from the API
   fetchRooms() {
+    this.loading = true;
+    this.error = null;
     this.apiService.getAllRooms().subscribe({
       next: (response: any) => {
-        this.rooms = response.rooms;
-        this.filteredRooms = response.rooms;
+        this.allRooms = response.rooms || [];
+        this.rooms = this.allRooms;
+        this.filterRooms(this.selectedRoomType);
+        this.loading = false;
       },
       error: (err) => {
-        this.showError(err?.error?.message || 'Error fetching rooms:' + err);
+        this.loading = false;
+        this.error = err?.error?.message || 'We couldn’t load rooms. Check your connection and try again.';
       },
     });
   }
@@ -63,10 +65,9 @@ export class RoomsComponent {
       next: (types: string[]) => {
         this.roomTypes = types;
       },
-      error: (err) => {
-        this.showError(
-          err?.error?.message || 'Error fetching room Types:' + err
-        );
+      error: () => {
+        // The type filter falls back to "All types"
+        this.roomTypes = [];
       },
     });
   }
@@ -75,14 +76,16 @@ export class RoomsComponent {
     // Handle the search result passed from RoomsearchComponent
     handleSearchResult(results: any[]) {
       this.rooms = results;
-      this.filteredRooms = results;
+      this.showingSearchResults = true;
+      this.selectedRoomType = '';
+      this.filterRooms('');
     }
-  
-    // Handle changes to room type filter
-    handleRoomTypeChange(event: any) {
-      const selectedType = event.target.value;
-      this.selectedRoomType = selectedType;
-      this.filterRooms(selectedType);
+
+    resetSearch() {
+      this.rooms = this.allRooms;
+      this.showingSearchResults = false;
+      this.selectedRoomType = '';
+      this.filterRooms('');
     }
 
   // Filter rooms by type
@@ -117,5 +120,5 @@ export class RoomsComponent {
     this.currentPage = pageNumber;
   }
 
-  
+
 }

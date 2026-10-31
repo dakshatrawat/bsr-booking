@@ -92,6 +92,12 @@ export class ApiService {
     });
   }
 
+  updateProfile(body: any): Observable<any> {
+    return this.http.put(`${ApiService.BASE_URL}/users/update`, body, {
+      headers: this.getHeader(),
+    });
+  }
+
   deleteAccount(): Observable<any> {
     return this.http.delete(`${ApiService.BASE_URL}/users/delete`, {
       headers: this.getHeader(),

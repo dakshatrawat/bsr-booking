@@ -1,8 +1,8 @@
 <div class="calendar-container">
   <div class="calendar-header">
-    <button class="nav-button" (click)="previousMonth()" aria-label="Previous month">‹</button>
+    <button type="button" class="nav-button" (click)="previousMonth()" aria-label="Previous month">‹</button>
     <h3 class="month-year">{{ getMonthYearString() }}</h3>
-    <button class="nav-button" (click)="nextMonth()" aria-label="Next month">›</button>
+    <button type="button" class="nav-button" (click)="nextMonth()" aria-label="Next month">›</button>
   </div>
 
   <div class="calendar-weekdays">
@@ -14,7 +14,13 @@
       *ngFor="let date of daysInMonth"
       [class]="getDateClass(date)"
       (click)="toggleDate(date)"
-      [attr.aria-label]="formatDate(date)"
+      (keydown.enter)="toggleDate(date)"
+      (keydown.space)="$event.preventDefault(); toggleDate(date)"
+      role="button"
+      [attr.tabindex]="isPastDate(date) || !isCurrentMonth(date) ? -1 : 0"
+      [attr.aria-pressed]="isSelectedDate(date)"
+      [attr.aria-disabled]="isPastDate(date) || isBookedDate(date) ? true : null"
+      [attr.aria-label]="formatDate(date) + (isBookedDate(date) ? ', booked' : '')"
     >
       <span class="day-number">{{ date.getDate() }}</span>
     </div>

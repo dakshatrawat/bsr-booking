@@ -1,59 +1,42 @@
-<div class="about-container">
-  <div class="hero-section">
-    <h1>About Bhagat Singh Resort</h1>
-    <p class="subtitle">Your Mountain Sanctuary</p>
+<section class="about-hero" aria-labelledby="about-title">
+  <div class="about-hero__media" aria-hidden="true"></div>
+  <div class="container about-hero__content">
+    <h1 id="about-title">About Bhagat Singh Resort</h1>
+    <p class="about-hero__subtitle">Your mountain sanctuary on the road to Badrinath</p>
   </div>
+</section>
 
-  <div class="content-section">
-    <div class="about-content">
-      <div class="text-content">
-        <h2><i class="fas fa-mountain"></i> Welcome to the Mountains</h2>
-        <p>
-          Nestled in the serene embrace of the mountains, Bhagat Singh Resort offers a perfect escape 
-          from the hustle and bustle of everyday life. Our resort is designed to provide you with 
-          unparalleled comfort while you immerse yourself in the breathtaking natural beauty that 
-          surrounds us.
-        </p>
-        <p>
-          Whether you're seeking a peaceful retreat, an adventurous mountain experience, or simply 
-          a place to reconnect with nature, our resort provides the perfect setting. Each room is 
-          thoughtfully designed to offer comfort and tranquility, with stunning views of the 
-          mountain landscape.
-        </p>
-      </div>
-      
-      <div class="features-grid">
-        <div class="feature-card">
-          <div class="feature-icon"><i class="fas fa-mountain"></i></div>
-          <h3>Mountain Views</h3>
-          <p>Wake up to breathtaking panoramic views of the majestic mountains</p>
-        </div>
-        
-        <div class="feature-card">
-          <div class="feature-icon"><i class="fas fa-tree"></i></div>
-          <h3>Natural Surroundings</h3>
-          <p>Surrounded by pristine nature, offering peace and tranquility</p>
-        </div>
-        
-        <div class="feature-card">
-          <div class="feature-icon"><i class="fas fa-hotel"></i></div>
-          <h3>Comfortable Stay</h3>
-          <p>Modern amenities with traditional mountain hospitality</p>
-        </div>
-        
-        <div class="feature-card">
-          <div class="feature-icon"><i class="fas fa-star"></i></div>
-          <h3>Memorable Experience</h3>
-          <p>Create lasting memories in our serene mountain retreat</p>
-        </div>
-      </div>
-    </div>
+<div class="page about">
+  <section class="card about__intro" aria-labelledby="about-welcome" appReveal>
+    <h2 id="about-welcome">
+      <span class="about__intro-icon" aria-hidden="true"><i class="fas fa-mountain"></i></span>
+      Welcome to the mountains
+    </h2>
+    <p>
+      Bhagat Singh Resort sits in the quiet hills of Rudraprayag district, a comfortable
+      stop for pilgrims and travellers heading towards Badrinath. Our rooms are designed
+      for rest, with the mountain landscape right outside your window.
+    </p>
+    <p>
+      Whether you want a peaceful break, a base for exploring, or simply a place to
+      reconnect with nature, we look after the essentials properly so you can enjoy the
+      surroundings.
+    </p>
+  </section>
 
-    <div class="cta-section">
-      <h2>Ready to Experience the Mountains?</h2>
-      <p>Book your stay with us and discover the perfect mountain getaway</p>
-      <a routerLink="/rooms" class="cta-button">Explore Our Rooms</a>
-    </div>
-  </div>
+  <ul class="about__features" aria-label="Why guests stay with us">
+    <li *ngFor="let feature of features; let i = index" appReveal [revealDelay]="i * 80">
+      <article class="feature">
+        <span class="feature__icon" aria-hidden="true"><i class="fas" [ngClass]="feature.icon"></i></span>
+        <h3>{{ feature.title }}</h3>
+        <p>{{ feature.text }}</p>
+      </article>
+    </li>
+  </ul>
+
+  <section class="about__cta" aria-labelledby="about-cta" appReveal>
+    <h2 id="about-cta">Ready to plan your stay?</h2>
+    <p>See which rooms are free on your dates and book in a few steps.</p>
+    <a routerLink="/rooms" class="btn btn-primary btn-lg">Explore rooms</a>
+  </section>
 </div>
-

@@ -10,6 +10,7 @@ export interface AgentMessage {
 }
 
 export interface AgentChatRequest {
+  sessionId?: string;
   messages: AgentMessage[];
 }
 

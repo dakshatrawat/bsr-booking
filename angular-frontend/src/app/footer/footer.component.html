@@ -1,112 +1,75 @@
 <footer class="footer">
-  <div class="footer-container">
-    <!-- Main Footer Content -->
+  <div class="container">
     <div class="footer-content">
-      <!-- About Section -->
-      <div class="footer-section">
-        <h3>
-          <i class="fas fa-mountain"></i>
+      <section class="footer-section footer-section--brand" aria-labelledby="footer-brand">
+        <h2 id="footer-brand" class="footer-brand">
+          <i class="fas fa-mountain" aria-hidden="true"></i>
           Bhagat Singh Resort
-        </h3>
+        </h2>
         <p>
-          Your perfect mountain escape nestled in the serene hills. Experience tranquility, 
-          comfort, and breathtaking natural beauty in the heart of the mountains.
+          A quiet mountain stay on the road to Badrinath, with comfortable rooms,
+          home-style food and views of the Alaknanda valley.
         </p>
         <div class="social-links">
-          <a href="#" aria-label="Facebook" class="social-link">
-            <i class="fab fa-facebook-f"></i>
-          </a>
-          <a href="#" aria-label="Instagram" class="social-link">
-            <i class="fab fa-instagram"></i>
-          </a>
-          <a href="#" aria-label="Twitter" class="social-link">
-            <i class="fab fa-twitter"></i>
-          </a>
-          <a href="#" aria-label="LinkedIn" class="social-link">
-            <i class="fab fa-linkedin-in"></i>
-          </a>
+          <a href="#" aria-label="Facebook" class="social-link"><i class="fab fa-facebook-f" aria-hidden="true"></i></a>
+          <a href="#" aria-label="Instagram" class="social-link"><i class="fab fa-instagram" aria-hidden="true"></i></a>
+          <a href="#" aria-label="Twitter" class="social-link"><i class="fab fa-twitter" aria-hidden="true"></i></a>
+          <a href="#" aria-label="LinkedIn" class="social-link"><i class="fab fa-linkedin-in" aria-hidden="true"></i></a>
         </div>
-      </div>
+      </section>
 
-      <!-- Quick Links -->
-      <div class="footer-section">
-        <h4>
-          <i class="fas fa-link"></i>
-          Quick Links
-        </h4>
-        <ul>
-          <li><a routerLink="/home"><i class="fas fa-chevron-right"></i> Home</a></li>
-          <li><a routerLink="/rooms"><i class="fas fa-chevron-right"></i> Rooms</a></li>
-          <li><a routerLink="/about"><i class="fas fa-chevron-right"></i> About Us</a></li>
-          <li><a routerLink="/find-booking"><i class="fas fa-chevron-right"></i> Find Booking</a></li>
+      <nav class="footer-section" aria-labelledby="footer-links">
+        <h2 id="footer-links" class="footer-heading">Explore</h2>
+        <ul class="footer-list">
+          <li><a routerLink="/home">Home</a></li>
+          <li><a routerLink="/rooms">Rooms</a></li>
+          <li><a routerLink="/about">About us</a></li>
+          <li><a routerLink="/find-booking">Find a booking</a></li>
         </ul>
-      </div>
+      </nav>
 
-      <!-- Services -->
-      <div class="footer-section">
-        <h4>
-          <i class="fas fa-concierge-bell"></i>
-          Our Services
-        </h4>
-        <ul>
-          <li><i class="fas fa-check"></i> Free Parking</li>
-          <li><i class="fas fa-check"></i> Open Kitchen</li>
-          <li><i class="fas fa-check"></i> Room Service</li>
-          <li><i class="fas fa-check"></i> Geyser</li>
-          <li><i class="fas fa-check"></i> 24/7 Service</li>
-          <li><i class="fas fa-check"></i> Fine Dining</li>
+      <section class="footer-section" aria-labelledby="footer-services">
+        <h2 id="footer-services" class="footer-heading">Services</h2>
+        <ul class="footer-list">
+          <li>Free parking</li>
+          <li>Open kitchen</li>
+          <li>Room service</li>
+          <li>Hot water (geyser)</li>
+          <li>24/7 front desk</li>
+          <li>Restaurant</li>
         </ul>
-      </div>
+      </section>
 
-      <!-- Contact Info -->
-      <div class="footer-section">
-        <h4>
-          <i class="fas fa-address-card"></i>
-          Contact Us
-        </h4>
-        <ul class="contact-list">
+      <section class="footer-section" aria-labelledby="footer-contact">
+        <h2 id="footer-contact" class="footer-heading">Contact</h2>
+        <ul class="footer-list contact-list">
           <li>
-            <i class="fas fa-map-marker-alt"></i>
-            <div>
-              Nagrasu, NH 58, Badrinath Road, Rudraprayag, Uttarakhand, 246171
-            </div>
+            <i class="fas fa-location-dot" aria-hidden="true"></i>
+            <address>Nagrasu, NH 58, Badrinath Road, Rudraprayag, Uttarakhand 246171</address>
           </li>
           <li>
-            <i class="fas fa-phone"></i>
-            <div>
-              <a href="tel:+919410582284">+91 9410582284</a>
-            </div>
+            <i class="fas fa-phone" aria-hidden="true"></i>
+            <a href="tel:+919410582284" class="num">+91 94105 82284</a>
           </li>
           <li>
-            <i class="fas fa-envelope"></i>
-            <div>
-              <a href="mailto:bsrnagrasu@gmail.com">bsrnagrasu&#64;gmail.com</a>
-            </div>
+            <i class="fas fa-envelope" aria-hidden="true"></i>
+            <a href="mailto:bsrnagrasu@gmail.com">bsrnagrasu&#64;gmail.com</a>
           </li>
           <li>
-            <i class="fas fa-globe"></i>
-            <div>
-              <a href="https://www.bsrnagrasu.com" target="_blank">www.bsrnagrasu.com</a>
-            </div>
+            <i class="fas fa-globe" aria-hidden="true"></i>
+            <a href="https://www.bsrnagrasu.com" target="_blank" rel="noopener">www.bsrnagrasu.com</a>
           </li>
         </ul>
-      </div>
+      </section>
     </div>
 
-    <!-- Footer Bottom -->
     <div class="footer-bottom">
-      <div class="footer-bottom-content">
-        <p>&copy; 2025 Bhagat Singh Resort. All Rights Reserved.</p>
-        <div class="footer-links">
-          <a routerLink="/about">About</a>
-          <span>|</span>
-          <a href="#">Privacy Policy</a>
-          <span>|</span>
-          <a href="#">Terms & Conditions</a>
-          <span>|</span>
-          <a href="#">Cancellation Policy</a>
-        </div>
-      </div>
+      <p>&copy; {{ year }} Bhagat Singh Resort. All rights reserved.</p>
+      <ul class="footer-legal">
+        <li><a href="#">Privacy policy</a></li>
+        <li><a href="#">Terms and conditions</a></li>
+        <li><a href="#">Cancellation policy</a></li>
+      </ul>
     </div>
   </div>
 </footer>

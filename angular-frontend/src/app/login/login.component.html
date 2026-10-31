@@ -1,36 +1,76 @@
-<div>
-    <h2><i class="fas fa-sign-in-alt"></i> Login</h2>
-    <p *ngIf="error" class="error">{{ error }}</p>
-  
-    <form (ngSubmit)="handleSubmit()">
-      <input
-        type="email"
-        placeholder="email"
-        [(ngModel)]="formData.email"
-        name="email"
-        required
-      />
-      <div class="password-input-wrapper">
+<div class="auth-shell">
+  <div class="card auth-card">
+    <h1>Log in</h1>
+    <p class="auth-card__lead">Use the email and password you registered with.</p>
+
+    <div *ngIf="error" class="alert alert--danger" role="alert">
+      <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+      <div class="alert__body">{{ error }}</div>
+    </div>
+
+    <form #loginForm="ngForm" (ngSubmit)="handleSubmit(loginForm)" novalidate class="stack">
+      <div class="field">
+        <label class="field__label" for="login-email">Email</label>
         <input
-          [type]="showPassword ? 'text' : 'password'"
-          placeholder="password"
-          [(ngModel)]="formData.password"
-          name="password"
+          id="login-email"
+          class="input"
+          type="email"
+          name="email"
+          autocomplete="email"
+          inputmode="email"
+          [(ngModel)]="formData.email"
+          #email="ngModel"
           required
+          email
+          [class.is-invalid]="email.invalid && (email.touched || loginForm.submitted)"
+          [attr.aria-invalid]="email.invalid && (email.touched || loginForm.submitted)"
+          aria-describedby="login-email-error"
         />
-        <button 
-          type="button" 
-          class="password-toggle-btn" 
-          (click)="togglePassword()" 
-          (mousedown)="$event.preventDefault()"
-          aria-label="Toggle password visibility"
-        >
-          <i class="fas" [class.fa-eye]="!showPassword" [class.fa-eye-slash]="showPassword"></i>
-        </button>
+        <span id="login-email-error" class="field__error" *ngIf="email.invalid && (email.touched || loginForm.submitted)">
+          <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+          {{ email.errors?.['required'] ? 'Enter your email address' : 'Enter a valid email, like name@example.com' }}
+        </span>
       </div>
-  
-      <button type="submit">Login</button>
+
+      <div class="field">
+        <label class="field__label" for="login-password">Password</label>
+        <div class="input-group">
+          <input
+            id="login-password"
+            class="input"
+            [type]="showPassword ? 'text' : 'password'"
+            name="password"
+            autocomplete="current-password"
+            [(ngModel)]="formData.password"
+            #password="ngModel"
+            required
+            [class.is-invalid]="password.invalid && (password.touched || loginForm.submitted)"
+            [attr.aria-invalid]="password.invalid && (password.touched || loginForm.submitted)"
+            aria-describedby="login-password-error"
+          />
+          <button
+            type="button"
+            class="input-group__action"
+            (click)="togglePassword()"
+            (mousedown)="$event.preventDefault()"
+            [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+            [attr.aria-pressed]="showPassword"
+            [title]="showPassword ? 'Hide password' : 'Show password'"
+          >
+            <i class="fas" [class.fa-eye]="!showPassword" [class.fa-eye-slash]="showPassword" aria-hidden="true"></i>
+          </button>
+        </div>
+        <span id="login-password-error" class="field__error" *ngIf="password.invalid && (password.touched || loginForm.submitted)">
+          <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+          Enter your password
+        </span>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block" [class.is-loading]="submitting" [disabled]="submitting" [attr.aria-busy]="submitting">
+        <span>Log in</span>
+      </button>
     </form>
-    <p>Don't have an account? <a routerLink="/register">Register</a></p>
+
+    <p class="auth-card__footer">New here? <a routerLink="/register">Create an account</a></p>
   </div>
-  
+</div>

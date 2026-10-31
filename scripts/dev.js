@@ -52,8 +52,10 @@ const services = [
     color: '\x1b[36m',
     cwd: path.join(root, 'spring-backend'),
     env: backendEnv,
-    // cmd.exe may not search the working directory, so use the full path on Windows
-    cmd: isWin ? `"${path.join(root, 'spring-backend', 'mvnw.cmd')}" spring-boot:run` : './mvnw spring-boot:run',
+    // cmd.exe may not search the working directory, so use the full path on Windows.
+    // `clean` first: the IDE's Java compiler also writes to target/classes and can leave
+    // stale or invalid classes (e.g. Lombok constructors) that Maven would otherwise reuse.
+    cmd: isWin ? `"${path.join(root, 'spring-backend', 'mvnw.cmd')}" clean spring-boot:run` : './mvnw clean spring-boot:run',
   },
   {
     name: 'frontend',

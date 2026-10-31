@@ -1,152 +1,124 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ApiService } from '../service/api.service';
-import { ActivatedRoute, Router } from '@angular/router';
 import { CalendarComponent } from '../calendar/calendar.component';
 import { BookingDateService } from '../booking-date.service';
 
 @Component({
   selector: 'app-roomdetails',
-  imports: [CommonModule, FormsModule, CalendarComponent],
+  imports: [CommonModule, RouterLink, CalendarComponent],
   templateUrl: './roomdetails.component.html',
   styleUrl: './roomdetails.component.css'
 })
+export class RoomdetailsComponent implements OnInit {
 
-export class RoomdetailsComponent {
+  private destroyRef = inject(DestroyRef);
 
   constructor(
     private apiService: ApiService,
     private route: ActivatedRoute,
     private router: Router,
     private bookingDateService: BookingDateService
-  ){}
+  ) {}
 
   room: any = null;
   roomId: any = '';
   selectedDates: string[] = [];
-  totalPrice: number = 0;
-  totalDaysToStay: number = 0;
-  showDatePicker: boolean = false;
-  showBookingPreview: boolean = false;
-  message: any = null;
-  error: any = null;
-  
-  ngOnInit():void{
+  loading = false;
+  loadError = '';
+  imageFailed = false;
+  booking = false;
+  error = '';
+
+  ngOnInit(): void {
     this.roomId = this.route.snapshot.paramMap.get('id');
-    
+
     if (this.roomId) {
       this.fetchRoomDetails(this.roomId);
+    } else {
+      this.loadError = "This link doesn't point to a room.";
     }
 
-    // Load selected dates from service
+    // Dates picked on the search screen carry over to this page
     this.selectedDates = this.bookingDateService.getSelectedDates();
-    
-    // Subscribe to date changes
-    this.bookingDateService.selectedDates$.subscribe(dates => {
-      this.selectedDates = dates;
-    });
+    this.bookingDateService.selectedDates$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(dates => this.selectedDates = dates);
   }
 
-  fetchRoomDetails(roomId: string): void{
+  fetchRoomDetails(roomId: string): void {
+    this.loading = true;
+    this.loadError = '';
     this.apiService.getRoomById(roomId).subscribe({
-      next:(res: any) =>{
-        this.room = res.room
+      next: (res: any) => {
+        this.room = res.room;
+        this.imageFailed = false;
+        this.loading = false;
+        if (!this.room) this.loadError = "This room doesn't exist or has been removed.";
       },
       error: (err) => {
-        this.showError(err?.error?.message || "Unable to fetch room details")
+        this.loading = false;
+        this.loadError = err?.error?.message || 'Check your connection and try again.';
       }
-    })
-  }
-
-  showError(err: any): void{
-    console.log(err)
-    this.error = err;
-    setTimeout(() => {
-      this.error = ''
-    }, 5000)
+    });
   }
 
   onDatesSelected(dates: string[]): void {
     this.selectedDates = dates;
+    this.error = '';
   }
 
-  calculateTotalPrice(): number {
-    if (this.selectedDates.length === 0) return 0;
-
-    // Calculate days based on selected dates
-    this.totalDaysToStay = this.selectedDates.length;
-
-    return this.room?.pricePerNight * this.totalDaysToStay || 0;
+  private get sortedDates(): string[] {
+    return [...this.selectedDates].sort();
   }
 
-  handleConfirmation(): void{
-    if(this.selectedDates.length === 0){
-      this.showError("Please select at least one date");
-      return;
-    }
-
-    this.totalPrice = this.calculateTotalPrice();
-    this.showBookingPreview = true;
+  get checkInDate(): string | null {
+    return this.sortedDates[0] ?? null;
   }
 
-  acceptBooking():void{
-    if(!this.room || this.selectedDates.length === 0) return
+  // Check-out is the morning after the last selected night
+  get checkOutDate(): string | null {
+    const dates = this.sortedDates;
+    if (dates.length === 0) return null;
+    const last = new Date(dates[dates.length - 1]);
+    last.setDate(last.getDate() + 1);
+    return last.toISOString().split('T')[0];
+  }
 
-    // Get check-in (earliest) and check-out (latest) dates from selected dates
-    const sortedDates = [...this.selectedDates].sort();
-    const formattedCheckInDate = sortedDates[0];
-    
-    // For check-out, add one day to the last selected date (exclusive)
-    const lastDate = new Date(sortedDates[sortedDates.length - 1]);
-    lastDate.setDate(lastDate.getDate() + 1);
-    const formattedCheckOutDate = lastDate.toISOString().split('T')[0];
+  get totalPrice(): number {
+    return (this.room?.pricePerNight || 0) * this.selectedDates.length;
+  }
 
-    console.log("check in date is: "+ formattedCheckInDate);
-    console.log("check out date is: " + formattedCheckOutDate);
+  acceptBooking(): void {
+    if (!this.room || this.selectedDates.length === 0 || this.booking) return;
 
-    //we are building our body object
-    const booking = {
-      checkInDate: formattedCheckInDate,
-      checkOutDate: formattedCheckOutDate,
+    this.booking = true;
+    this.error = '';
+    const body = {
+      checkInDate: this.checkInDate,
+      checkOutDate: this.checkOutDate,
       roomId: this.roomId
     };
 
-    this.apiService.bookRoom(booking).subscribe({
-      next: (res: any) =>{
+    this.apiService.bookRoom(body).subscribe({
+      next: (res: any) => {
+        this.booking = false;
         if (res.status === 200 && res.booking) {
-          // Get booking reference and total price from response
-          const bookingReference = res.booking.bookingReference;
-          const totalPrice = res.booking.totalPrice;
-          
-          // Redirect to payment page
-          this.router.navigate(['/payment', bookingReference, totalPrice]);
+          this.router.navigate(['/payment', res.booking.bookingReference, res.booking.totalPrice]);
+        } else {
+          this.error = res?.message || "We couldn't create your booking. Try again.";
         }
       },
-      error:(err) =>{
-        this.showError(err?.error?.message || err?. message || "Unable to make a booking")
+      error: (err) => {
+        this.booking = false;
+        this.error = err?.error?.message || err?.message || "We couldn't create your booking. Try again.";
       }
-    })
+    });
   }
 
-  cancelBookingPreview():void{
-    this.showBookingPreview = false
-  }
-
-  get isLoading():boolean{
-    return !this.room
-  }
-
-  // Helper method to get full image URL
   getImageUrl(imagePath: string): string {
     return this.apiService.getImageUrl(imagePath);
   }
-
-  // Handle image loading errors
-  onImageError(event: any): void {
-    console.error('Image failed to load:', event.target.src);
-    event.target.src = '/assets/placeholder-room.jpg'; // Fallback to placeholder
-  }
-
 }
-

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { ApiService } from '../../service/api.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
@@ -8,7 +8,7 @@ declare var Razorpay: any;
 
 @Component({
   selector: 'app-paymentpage',
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink],
   templateUrl: './paymentpage.component.html',
   styleUrl: './paymentpage.component.css',
 })
@@ -81,11 +81,9 @@ export class PaymentpageComponent {
     });
   }
 
+  // Payment errors stay visible until the next attempt; they may need to be read out to support
   showError(msg: any): void {
     this.error = msg;
-    setTimeout(() => {
-      this.error = '';
-    }, 5000);
   }
 
   // This is the method to call when a user clicks on pay now

@@ -1,51 +1,93 @@
-<div class="container">
-    <!-- Error Message -->
-    <div *ngIf="error" class="error">
-      <p>{{ error }}</p>
+<div class="page page--narrow">
+  <header class="page-header">
+    <div class="page-header__text">
+      <h1>Find a booking</h1>
+      <p class="page-header__description">Enter the reference from your confirmation email to see your stay.</p>
     </div>
-  
-    <h2>Find Booking</h2>
-  
-    <!-- Search Section -->
-    <div>
-      <input
-        type="text"
-        placeholder="Enter your booking confirmation code"
-        [(ngModel)]="confirmationCode"
-        required
-      />
-      <button (click)="handleSearch()">Find</button>
-    </div>
-  
-    <!-- Booking Details -->
-    <div *ngIf="bookingDetails" class="details">
-      <h3>Booking Details</h3>
-      <p><strong>Booking Code:</strong> {{ bookingDetails.bookingReference }}</p>
-      <p><strong>Check-in Date:</strong> {{ bookingDetails.checkInDate }}</p>
-      <p><strong>Check-out Date:</strong> {{ bookingDetails.checkOutDate }}</p>
-      <p><strong>Payment Status:</strong> {{ bookingDetails.paymentStatus }}</p>
-      <p><strong>Amount:</strong> {{ bookingDetails.totalPrice }}</p>
-      <p><strong>Booking Status:</strong> {{ bookingDetails.bookingStatus }}</p>
-  
-      <hr />
-      <h3>Booker Details</h3>
-      <div>
-        <p><strong>First Name:</strong> {{ bookingDetails.user.firstName }}</p>
-        <p><strong>Last Name:</strong> {{ bookingDetails.user.lastName }}</p>
-        <p><strong>Email:</strong> {{ bookingDetails.user.email }}</p>
-        <p>
-          <strong>Phone Number:</strong> {{ bookingDetails.user.phoneNumber }}
-        </p>
+  </header>
+
+  <form class="card search-card" role="search" (ngSubmit)="handleSearch()" novalidate>
+    <div class="field">
+      <label class="field__label" for="booking-ref">Booking reference</label>
+      <div class="search-row">
+        <input
+          id="booking-ref"
+          class="input num"
+          type="text"
+          name="confirmationCode"
+          [(ngModel)]="confirmationCode"
+          autocomplete="off"
+          spellcheck="false"
+          required
+          [class.is-invalid]="!!error"
+          [attr.aria-invalid]="!!error"
+          aria-describedby="booking-ref-error"
+        />
+        <button type="submit" class="btn btn-primary" [class.is-loading]="searching" [disabled]="searching" [attr.aria-busy]="searching">
+          <span>Find booking</span>
+        </button>
       </div>
-  
-      <hr />
-      <h3>Room Details</h3>
-      <div>
-        <p><strong>Room Number:</strong> {{ bookingDetails.room.roomNumber }}</p>
-        <p><strong>Room Type:</strong> {{ bookingDetails.room.type }}</p>
-        <p><strong>Room Capacity:</strong> {{ bookingDetails.room.capacity }}</p>
-        <img [src]="getImageUrl(bookingDetails.room.imageUrl)" alt="Room Image" />
-      </div>
+      <span id="booking-ref-error" class="field__error" *ngIf="error" role="alert">
+        <i class="fas fa-circle-exclamation" aria-hidden="true"></i> {{ error }}
+      </span>
     </div>
-  </div>
-  
+  </form>
+
+  <article *ngIf="bookingDetails" class="card result" aria-labelledby="result-title" aria-live="polite">
+    <header class="result__header">
+      <div>
+        <p class="text-subtle result__eyebrow">Booking reference</p>
+        <h2 id="result-title" class="num">{{ bookingDetails.bookingReference }}</h2>
+      </div>
+      <div class="result__badges">
+        <app-status-badge [status]="bookingDetails.bookingStatus"></app-status-badge>
+        <app-status-badge [status]="bookingDetails.paymentStatus"></app-status-badge>
+      </div>
+    </header>
+
+    <div class="result__grid">
+      <section aria-labelledby="stay-heading">
+        <h3 id="stay-heading" class="result__section-title">Stay</h3>
+        <dl class="dl">
+          <dt>Check-in</dt>
+          <dd class="num">{{ bookingDetails.checkInDate | date: 'EEE d MMM y' }}</dd>
+          <dt>Check-out</dt>
+          <dd class="num">{{ bookingDetails.checkOutDate | date: 'EEE d MMM y' }}</dd>
+          <dt>Nights</dt>
+          <dd class="num">{{ nights }}</dd>
+          <dt>Total</dt>
+          <dd class="num">{{ bookingDetails.totalPrice | currency: 'INR' : 'symbol' : '1.0-2' }}</dd>
+        </dl>
+      </section>
+
+      <section aria-labelledby="guest-heading">
+        <h3 id="guest-heading" class="result__section-title">Booked by</h3>
+        <dl class="dl">
+          <dt>Name</dt>
+          <dd>{{ bookingDetails.user.firstName }} {{ bookingDetails.user.lastName }}</dd>
+          <dt>Email</dt>
+          <dd>{{ bookingDetails.user.email }}</dd>
+          <dt>Phone</dt>
+          <dd class="num">{{ bookingDetails.user.phoneNumber }}</dd>
+        </dl>
+      </section>
+    </div>
+
+    <section class="result__room" aria-labelledby="room-heading">
+      <div class="media-frame">
+        <img [src]="getImageUrl(bookingDetails.room.imageUrl)" [alt]="bookingDetails.room.type + ' room'" loading="lazy" width="320" height="200" />
+      </div>
+      <div>
+        <h3 id="room-heading" class="result__section-title">Room</h3>
+        <dl class="dl">
+          <dt>Type</dt>
+          <dd>{{ bookingDetails.room.type }}</dd>
+          <dt>Room number</dt>
+          <dd class="num">{{ bookingDetails.room.roomNumber }}</dd>
+          <dt>Sleeps</dt>
+          <dd class="num">{{ bookingDetails.room.capacity }} {{ bookingDetails.room.capacity === 1 ? 'guest' : 'guests' }}</dd>
+        </dl>
+      </div>
+    </section>
+  </article>
+</div>

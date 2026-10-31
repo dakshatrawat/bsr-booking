@@ -2,7 +2,8 @@ import { Component } from '@angular/core';
 import { ApiService } from '../service/api.service';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
+import { ToastService } from '../ui/toast.service';
 
 
 
@@ -13,8 +14,8 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './register.component.css'
 })
 export class RegisterComponent {
-  constructor( private apiService: ApiService, private router: Router){}
-  
+  constructor( private apiService: ApiService, private router: Router, private toast: ToastService){}
+
   formData: any = {
 
     firstName: '',
@@ -26,38 +27,32 @@ export class RegisterComponent {
 
   error: any = null;
   showPassword: boolean = false;
+  submitting: boolean = false;
 
   togglePassword(): void {
     this.showPassword = !this.showPassword;
   }
 
-  handleSubmit(){
-    if (
-      !this.formData.email ||
-      !this.formData.firstName ||
-      !this.formData.lastName ||
-      !this.formData.phoneNumber ||
-      !this.formData.password 
-    ) {
-      this.showError('Please all fields are required');
+  handleSubmit(form: NgForm){
+    this.error = null;
+
+    // Field-level messages are shown inline by the template
+    if (form.invalid) {
       return
     }
 
+    this.submitting = true;
     this.apiService.registerUser(this.formData).subscribe({
       next:(res: any) => {
+        this.submitting = false;
+        this.toast.success('Account created', 'Log in with your new email and password.');
         this.router.navigate(['/login'])
       },
       error: (err: any) => {
-        this.showError(err?.error?.message || err.message || 'Unable to Register a user: ' + err)
+        this.submitting = false;
+        this.error = err?.error?.message || 'We couldn’t create your account. Check your details and try again.';
       }
     });
-  }
-
-  showError(msg: string){
-    this.error = msg;
-    setTimeout(()=> {
-      this.error = null
-    }, 4000);
   }
 
 }

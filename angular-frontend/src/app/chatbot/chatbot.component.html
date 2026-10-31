@@ -1,60 +1,124 @@
-<!-- Floating Chat Button -->
-<button 
-  class="chatbot-button" 
-  (click)="toggleChat()"
-  [class.open]="isOpen"
-  aria-label="Open AI Chatbot">
-  <span *ngIf="!isOpen" class="button-text">Book using AI</span>
-  <span *ngIf="!isOpen" class="button-text-mobile">AI</span>
-  <span *ngIf="isOpen" class="button-icon">✕</span>
-</button>
-
-<!-- Chat Interface -->
-<div class="chatbot-container" [class.open]="isOpen">
-  <div class="chatbot-header">
-    <div class="header-content">
-      <div class="header-icon">🤖</div>
-      <div class="header-text">
-        <h3>AI Booking Assistant</h3>
-        <p>Get help booking your stay</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="chatbot-messages">
-    <div *ngFor="let msg of messages" class="message" [ngClass]="{'bot-message': msg.sender === 'bot', 'user-message': msg.sender === 'user'}">
-      <div class="message-content">
-        <div class="message-text">
-          {{ msg.text }}
-        </div>
-        <div class="message-time">{{ msg.time | date:'shortTime' }}</div>
-      </div>
-    </div>
-
-    <div *ngIf="isLoading" class="message bot-message">
-      <div class="message-content">
-        <div class="message-text">Thinking...</div>
-      </div>
-    </div>
-
-    <div *ngIf="error" class="message bot-message">
-      <div class="message-content">
-        <div class="message-text">⚠️ {{ error }}</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="chatbot-input-container">
-    <input 
-      type="text" 
-      class="chatbot-input" 
-      placeholder="Type your message..."
-      [(ngModel)]="message"
-      (keyup.enter)="sendMessage()"
-      [disabled]="isLoading">
-    <button class="send-button" (click)="sendMessage()" [disabled]="isLoading || !message.trim()">
-      <span *ngIf="!isLoading">→</span>
-      <span *ngIf="isLoading">...</span>
+<!-- Minimized: launcher + optional greeting peek -->
+<div class="launcher-area" *ngIf="!isOpen">
+  <div *ngIf="showPeek" class="peek" (mouseenter)="pauseGreeting(true)" (mouseleave)="pauseGreeting(false)">
+    <button type="button" class="peek__body" (click)="open()">
+      <span class="peek__title">Booking assistant</span>
+      <span class="greeting-slot" aria-hidden="true">
+        <span *ngFor="let g of [currentGreeting]; trackBy: trackGreeting" class="greeting">{{ g }}</span>
+      </span>
+      <span class="sr-only">Open the booking assistant</span>
+    </button>
+    <button type="button" class="icon-btn peek__close" (click)="dismissPeek()" aria-label="Dismiss assistant greeting">
+      <i class="fas fa-xmark" aria-hidden="true"></i>
     </button>
   </div>
+
+  <button #launcher type="button" class="launcher" (click)="open()" aria-label="Open booking assistant" aria-controls="chat-panel" aria-expanded="false">
+    <i class="fas fa-comment-dots" aria-hidden="true"></i>
+    <span class="launcher__label" [class.is-typing]="isTyping">{{ launcherText }}</span>
+  </button>
 </div>
+
+<!-- Open panel -->
+<section
+  *ngIf="isOpen"
+  id="chat-panel"
+  class="panel"
+  [class.is-compact]="isCompact"
+  role="region"
+  aria-label="Booking assistant chat"
+>
+  <header class="panel__header">
+    <span class="avatar" aria-hidden="true"><i class="fas fa-mountain"></i></span>
+    <div class="panel__identity">
+      <h2 class="panel__title">Booking assistant</h2>
+      <p class="panel__status" [ngSwitch]="isReachable">
+        <ng-container *ngSwitchCase="true"><span class="status-dot" aria-hidden="true"></span>Connected</ng-container>
+        <ng-container *ngSwitchCase="false"><span class="status-dot status-dot--down" aria-hidden="true"></span>Can't connect right now</ng-container>
+        <ng-container *ngSwitchDefault>AI assistant · Bhagat Singh Resort</ng-container>
+      </p>
+    </div>
+    <div class="panel__controls">
+      <button
+        type="button"
+        class="icon-btn expand-btn"
+        (click)="toggleSize()"
+        [attr.aria-label]="isCompact ? 'Make chat larger' : 'Make chat smaller'"
+        [attr.aria-pressed]="isCompact"
+        [title]="isCompact ? 'Larger' : 'Smaller'"
+      >
+        <i class="fas" [class.fa-up-right-and-down-left-from-center]="isCompact" [class.fa-down-left-and-up-right-to-center]="!isCompact" aria-hidden="true"></i>
+      </button>
+      <button type="button" class="icon-btn" (click)="minimize()" aria-label="Minimize chat" title="Minimize">
+        <i class="fas fa-minus" aria-hidden="true"></i>
+      </button>
+    </div>
+  </header>
+
+  <div #messageList class="panel__body">
+    <!-- Intro: rotating prompt + suggestions, until the conversation starts -->
+    <div *ngIf="!hasConversation" class="intro" (mouseenter)="pauseGreeting(true)" (mouseleave)="pauseGreeting(false)">
+      <p class="greeting-slot greeting-slot--lg" aria-hidden="true">
+        <span *ngFor="let g of [currentGreeting]; trackBy: trackGreeting" class="greeting">{{ g }}</span>
+      </p>
+      <p class="sr-only">How can I help with your stay?</p>
+    </div>
+
+    <ol class="messages" role="log" aria-live="polite" aria-relevant="additions" aria-label="Conversation">
+      <li
+        *ngFor="let msg of messages"
+        class="message"
+        [class.message--user]="msg.sender === 'user'"
+        [class.message--bot]="msg.sender === 'bot'"
+        [class.message--error]="msg.isError"
+      >
+        <span class="sr-only">{{ msg.sender === 'user' ? 'You said' : 'Assistant said' }}:</span>
+        <div class="bubble">{{ msg.text }}</div>
+        <div class="message__meta">
+          <time [attr.datetime]="msg.time.toISOString()">{{ msg.time | date: 'shortTime' }}</time>
+          <span *ngIf="msg.failed" class="message__failed"><i class="fas fa-circle-exclamation" aria-hidden="true"></i> Not delivered</span>
+        </div>
+      </li>
+
+      <li *ngIf="isLoading" class="message message--bot" aria-label="Assistant is typing">
+        <div class="bubble typing" aria-hidden="true"><span></span><span></span><span></span></div>
+      </li>
+    </ol>
+
+    <div *ngIf="!isLoading && messages[messages.length - 1]?.isError && messages[messages.length - 2]?.failed" class="retry-row">
+      <button type="button" class="btn btn-secondary btn-sm" (click)="retry()">
+        <i class="fas fa-rotate-right" aria-hidden="true"></i><span>Retry</span>
+      </button>
+    </div>
+
+    <div *ngIf="!hasConversation" class="chips" role="group" aria-label="Suggested questions">
+      <button
+        *ngFor="let q of quickQuestions"
+        type="button"
+        class="chip"
+        (click)="askQuickQuestion(q)"
+        [disabled]="isLoading"
+      >{{ q }}</button>
+    </div>
+  </div>
+
+  <form class="composer" (ngSubmit)="sendMessage()">
+    <label class="sr-only" for="chat-input">Message the booking assistant</label>
+    <textarea
+      #composer
+      id="chat-input"
+      class="composer__input"
+      name="message"
+      rows="1"
+      placeholder="Ask about rooms, dates or bookings…"
+      [(ngModel)]="message"
+      (keydown)="onComposerKeydown($event)"
+      (input)="autoGrow()"
+      aria-describedby="chat-input-hint"
+    ></textarea>
+    <span id="chat-input-hint" class="sr-only">Press Enter to send, Shift and Enter for a new line.</span>
+    <button type="submit" class="composer__send" [disabled]="isLoading || !message.trim()" aria-label="Send message" title="Send">
+      <i class="fas fa-arrow-up" aria-hidden="true"></i>
+    </button>
+  </form>
+</section>

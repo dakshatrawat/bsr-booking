@@ -1,7 +1,11 @@
-<div>
-    <h1>Payment Successful</h1>
-    <p>Your payment for booking reference <strong>{{ bookingReference }}</strong> has been processed successfully.</p>
-    <p>You will receive an email shortly.</p>
-    <a routerLink="/">Go to Home</a>
-  </div>
-  
+<div class="page page--form">
+  <section class="card empty-state" aria-labelledby="pay-result-title">
+    <span class="empty-state__icon empty-state__icon--success" aria-hidden="true"><i class="fas fa-check"></i></span>
+    <h1 id="pay-result-title">Payment received</h1>
+    <p>Your booking <strong class="num">{{ bookingReference }}</strong> is paid. We've emailed you a confirmation.</p>
+    <div class="empty-state__actions">
+      <a routerLink="/profile" class="btn btn-primary">View my bookings</a>
+      <a routerLink="/home" class="btn btn-ghost">Back to home</a>
+    </div>
+  </section>
+</div>

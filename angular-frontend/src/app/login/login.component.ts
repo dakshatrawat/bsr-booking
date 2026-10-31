@@ -3,7 +3,7 @@ import { Component } from '@angular/core';
 import { ApiService } from '../service/api.service';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 
 
 @Component({
@@ -13,9 +13,9 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './login.component.css'
 })
 export class LoginComponent {
-  
+
   constructor( private apiService: ApiService, private router: Router){}
-  
+
   formData: any = {
 
     email: '',
@@ -24,22 +24,24 @@ export class LoginComponent {
   }
   error: any = null;
   showPassword: boolean = false;
+  submitting: boolean = false;
 
   togglePassword(): void {
     this.showPassword = !this.showPassword;
   }
 
-  async handleSubmit(){
+  handleSubmit(form: NgForm){
+    this.error = null;
 
-    console.log("hanlde submit is called for login")
-
-    if (!this.formData.email || !this.formData.password) {
-      this.showError("Please fill all the fields correctly")
+    // Field-level messages are shown inline by the template
+    if (form.invalid) {
       return
     }
 
+    this.submitting = true;
     this.apiService.loginUser(this.formData).subscribe({
       next: (res:any) => {
+        this.submitting = false;
         if (res.status === 200) {
           this.apiService.encryptAndSaveToStorage('token', res.token);
           this.apiService.encryptAndSaveToStorage('role', res.role);
@@ -47,15 +49,10 @@ export class LoginComponent {
         }
       },
       error: (err: any) => {
-        this.showError(err?.error?.message || err.message || 'Unable To Login: ' + err)
+        this.submitting = false;
+        // Errors stay visible until the next attempt
+        this.error = err?.error?.message || 'We couldn’t log you in. Check your email and password and try again.';
       }
     });
-  }
-
-  showError(msg: string){
-    this.error = msg;
-    setTimeout(()=> {
-      this.error = null
-    }, 4000);
   }
 }

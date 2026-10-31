@@ -1,16 +1,34 @@
-<div>
-    <ul>
-      <li *ngFor="let number of pageNumbers">
-        <button
-          (click)="onPageChange(number)"
-          [ngClass]="{
-            'page-button': true,
-            'current-page': currentPage === number
-          }"
-        >
-          {{ number }}
-        </button>
-      </li>
-    </ul>
-  </div>
-  
+<nav *ngIf="totalRooms > 0" class="pagination" aria-label="Pagination">
+  <p class="pagination__summary">
+    Showing <span class="num">{{ firstItem }}–{{ lastItem }}</span> of <span class="num">{{ totalRooms }}</span>
+  </p>
+
+  <ul *ngIf="pageCount > 1" class="pagination__pages">
+    <li>
+      <button type="button" class="btn btn-ghost btn-sm" (click)="onPageChange(currentPage - 1)" [disabled]="currentPage === 1" aria-label="Previous page">
+        <i class="fas fa-chevron-left" aria-hidden="true"></i>
+        <span class="pagination__label">Previous</span>
+      </button>
+    </li>
+    <li *ngFor="let item of pageItems">
+      <span *ngIf="item === null" class="pagination__gap" aria-hidden="true">…</span>
+      <button
+        *ngIf="item !== null"
+        type="button"
+        class="btn btn-sm page-button num"
+        [class.current-page]="currentPage === item"
+        [attr.aria-current]="currentPage === item ? 'page' : null"
+        [attr.aria-label]="'Page ' + item"
+        (click)="onPageChange(item)"
+      >
+        {{ item }}
+      </button>
+    </li>
+    <li>
+      <button type="button" class="btn btn-ghost btn-sm" (click)="onPageChange(currentPage + 1)" [disabled]="currentPage === pageCount" aria-label="Next page">
+        <span class="pagination__label">Next</span>
+        <i class="fas fa-chevron-right" aria-hidden="true"></i>
+      </button>
+    </li>
+  </ul>
+</nav>

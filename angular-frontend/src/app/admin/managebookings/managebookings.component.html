@@ -1,39 +1,147 @@
-<div class="container">
-    <div *ngIf="error" class="error">{{ error }}</div>
-      <h2>All Bookings</h2>
-    
-      <!-- Search bar to filter bookings -->
-      <div class="search">
-        <label>Filter by Booking Number:</label>
+<div class="page">
+  <header class="page-header">
+    <div class="page-header__text">
+      <p class="page-header__eyebrow"><a routerLink="/admin">Admin</a></p>
+      <h1>Bookings</h1>
+      <p class="page-header__description">All reservations, newest first. Open a booking to change its status.</p>
+    </div>
+  </header>
+
+  <div class="toolbar" role="search" aria-label="Filter bookings">
+    <div class="field">
+      <label class="field__label" for="booking-search">Booking reference</label>
+      <div class="input-group">
+        <i class="fas fa-magnifying-glass input-group__icon" aria-hidden="true"></i>
         <input
-          type="text"
+          id="booking-search"
+          class="input input--leading"
+          type="search"
           [(ngModel)]="searchTerm"
           (input)="handleSearchChange()"
-          placeholder="Enter booking number"
+          placeholder="Search by reference"
+          autocomplete="off"
+          spellcheck="false"
         />
       </div>
-    
-      <!-- Display bookings for the current page -->
-      <div class="results">
-        <div *ngFor="let booking of currentBookings" class="result-item">
-          <p><strong>Booking Code:</strong> {{ booking.bookingReference }}</p>
-          <p><strong>Check In Date:</strong> {{ booking.checkInDate }}</p>
-          <p><strong>Check Out Date:</strong> {{ booking.checkOutDate }}</p>
-          <p><strong>Total Price:</strong> {{ booking.totalPrice }}</p>
-          <p><strong>Payment Status:</strong> {{ booking.paymentStatus }}</p>
-          <p><strong>Booking Status:</strong> {{ booking.bookingStatus }}</p>
-          <button (click)="manageBooking(booking.bookingReference)">
-            Manage Booking
-          </button>
-        </div>
-      </div>
-    
-      <!-- Pagination Component -->
-      <app-pagination
-        [roomPerPage]="bookingsPerPage"
-        [totalRooms]="filteredBookings.length"
-        [currentPage]="currentPage"
-        (paginate)="onPageChange($event)"
-      ></app-pagination>
     </div>
-    
+    <div class="field field--compact">
+      <label class="field__label" for="booking-status-filter">Booking status</label>
+      <select id="booking-status-filter" class="select" [(ngModel)]="bookingStatusFilter" (change)="applyFilters()">
+        <option value="">All</option>
+        <option value="BOOKED">Booked</option>
+        <option value="CHECKED_IN">Checked in</option>
+        <option value="CHECKED_OUT">Checked out</option>
+        <option value="CANCELLED">Cancelled</option>
+      </select>
+    </div>
+    <div class="field field--compact">
+      <label class="field__label" for="payment-status-filter">Payment</label>
+      <select id="payment-status-filter" class="select" [(ngModel)]="paymentStatusFilter" (change)="applyFilters()">
+        <option value="">All</option>
+        <option value="PENDING">Pending</option>
+        <option value="COMPLETED">Paid</option>
+        <option value="FAILED">Failed</option>
+        <option value="REFUNDED">Refunded</option>
+        <option value="REVERSED">Reversed</option>
+      </select>
+    </div>
+    <button *ngIf="hasFilters" type="button" class="btn btn-ghost" (click)="clearFilters()">Clear filters</button>
+    <p class="toolbar__meta" aria-live="polite">
+      <ng-container *ngIf="!loading && !error">
+        <span class="num">{{ filteredBookings.length }}</span> {{ filteredBookings.length === 1 ? 'booking' : 'bookings' }}
+      </ng-container>
+    </p>
+  </div>
+
+  <div *ngIf="error" class="alert alert--danger" role="alert">
+    <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+    <div class="alert__body">
+      <strong class="alert__title">Bookings didn't load</strong>
+      {{ error }}
+    </div>
+    <button type="button" class="btn btn-secondary btn-sm alert__action" (click)="fetchBookings()">Try again</button>
+  </div>
+
+  <div *ngIf="!error" class="table-wrap" [attr.aria-busy]="loading">
+    <table class="data-table">
+      <caption class="sr-only">Bookings, sortable by column</caption>
+      <thead>
+        <tr>
+          <th scope="col" class="col-sticky" [attr.aria-sort]="sort.ariaSort('bookingReference')">
+            <button type="button" class="sort-btn" (click)="toggleSort('bookingReference')">Reference <i class="fas" [ngClass]="sort.icon('bookingReference')" aria-hidden="true"></i></button>
+          </th>
+          <th scope="col" [attr.aria-sort]="sort.ariaSort('checkInDate')">
+            <button type="button" class="sort-btn" (click)="toggleSort('checkInDate')">Check-in <i class="fas" [ngClass]="sort.icon('checkInDate')" aria-hidden="true"></i></button>
+          </th>
+          <th scope="col" [attr.aria-sort]="sort.ariaSort('checkOutDate')">
+            <button type="button" class="sort-btn" (click)="toggleSort('checkOutDate')">Check-out <i class="fas" [ngClass]="sort.icon('checkOutDate')" aria-hidden="true"></i></button>
+          </th>
+          <th scope="col" class="num" [attr.aria-sort]="sort.ariaSort('nights')">
+            <button type="button" class="sort-btn" (click)="toggleSort('nights')">Nights <i class="fas" [ngClass]="sort.icon('nights')" aria-hidden="true"></i></button>
+          </th>
+          <th scope="col" class="num" [attr.aria-sort]="sort.ariaSort('totalPrice')">
+            <button type="button" class="sort-btn" (click)="toggleSort('totalPrice')">Total <i class="fas" [ngClass]="sort.icon('totalPrice')" aria-hidden="true"></i></button>
+          </th>
+          <th scope="col" [attr.aria-sort]="sort.ariaSort('bookingStatus')">
+            <button type="button" class="sort-btn" (click)="toggleSort('bookingStatus')">Status <i class="fas" [ngClass]="sort.icon('bookingStatus')" aria-hidden="true"></i></button>
+          </th>
+          <th scope="col" [attr.aria-sort]="sort.ariaSort('paymentStatus')">
+            <button type="button" class="sort-btn" (click)="toggleSort('paymentStatus')">Payment <i class="fas" [ngClass]="sort.icon('paymentStatus')" aria-hidden="true"></i></button>
+          </th>
+          <th scope="col" class="col-actions"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+
+      <tbody *ngIf="loading">
+        <tr *ngFor="let row of skeletonRows">
+          <td class="col-sticky"><span class="skeleton skeleton--text" style="width: 96px"></span></td>
+          <td><span class="skeleton skeleton--text" style="width: 88px"></span></td>
+          <td><span class="skeleton skeleton--text" style="width: 88px"></span></td>
+          <td class="num"><span class="skeleton skeleton--text" style="width: 24px; margin-left: auto"></span></td>
+          <td class="num"><span class="skeleton skeleton--text" style="width: 72px; margin-left: auto"></span></td>
+          <td><span class="skeleton skeleton--text" style="width: 80px"></span></td>
+          <td><span class="skeleton skeleton--text" style="width: 64px"></span></td>
+          <td></td>
+        </tr>
+      </tbody>
+
+      <tbody *ngIf="!loading">
+        <tr *ngFor="let booking of currentBookings">
+          <th scope="row" class="col-sticky cell-primary">
+            <a [routerLink]="['/admin/edit-booking', booking.bookingReference]" class="ref-link num">{{ booking.bookingReference }}</a>
+          </th>
+          <td class="num">{{ booking.checkInDate | date: 'd MMM y' }}</td>
+          <td class="num">{{ booking.checkOutDate | date: 'd MMM y' }}</td>
+          <td class="num">{{ booking.nights ?? '—' }}</td>
+          <td class="num cell-primary">{{ booking.totalPrice | currency: 'INR' : 'symbol' : '1.0-2' }}</td>
+          <td><app-status-badge [status]="booking.bookingStatus"></app-status-badge></td>
+          <td><app-status-badge [status]="booking.paymentStatus"></app-status-badge></td>
+          <td class="col-actions">
+            <a [routerLink]="['/admin/edit-booking', booking.bookingReference]" class="btn btn-secondary btn-sm" [attr.aria-label]="'Manage booking ' + booking.bookingReference">Manage</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Empty: nothing at all vs nothing matching filters -->
+    <div *ngIf="!loading && bookings.length === 0" class="empty-state">
+      <span class="empty-state__icon" aria-hidden="true"><i class="fas fa-calendar-xmark"></i></span>
+      <h2>No bookings yet</h2>
+      <p>When guests book a room, their reservations will appear here.</p>
+    </div>
+    <div *ngIf="!loading && bookings.length > 0 && filteredBookings.length === 0" class="empty-state">
+      <span class="empty-state__icon" aria-hidden="true"><i class="fas fa-filter-circle-xmark"></i></span>
+      <h2>No bookings match these filters</h2>
+      <p>Check the reference for typos, or widen the status filters.</p>
+      <button type="button" class="btn btn-secondary" (click)="clearFilters()">Clear filters</button>
+    </div>
+  </div>
+
+  <app-pagination
+    *ngIf="!loading && !error"
+    [roomPerPage]="bookingsPerPage"
+    [totalRooms]="filteredBookings.length"
+    [currentPage]="currentPage"
+    (paginate)="onPageChange($event)"
+  ></app-pagination>
+</div>

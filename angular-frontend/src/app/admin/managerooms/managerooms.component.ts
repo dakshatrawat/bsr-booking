@@ -1,15 +1,15 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RoomresultComponent } from '../../roomresult/roomresult.component';
 import { PaginationComponent } from '../../pagination/pagination.component';
 import { ApiService } from '../../service/api.service';
-import { Router } from '@angular/router';
+import { RouterLink } from '@angular/router';
+import { TableSort } from '../../ui/table-sort';
 
 
 @Component({
   selector: 'app-managerooms',
-  imports: [CommonModule, FormsModule, RoomresultComponent, PaginationComponent],
+  imports: [CommonModule, FormsModule, PaginationComponent, RouterLink],
   templateUrl: './managerooms.component.html',
   styleUrl: './managerooms.component.css'
 })
@@ -20,34 +20,33 @@ export class ManageroomsComponent {
   roomTypes: string[] = [];
   selectedRoomType: string = '';
   currentPage: number = 1;
-  roomsPerPage: number = 6;
-  error:any = null;
+  roomsPerPage: number = 20;
+  loading: boolean = true;
+  error: string | null = null;
 
-  constructor(private apiService: ApiService, private router: Router) {}
+  sort = new TableSort<any>('roomNumber');
+  readonly skeletonRows = Array.from({ length: 6 });
+
+  constructor(private apiService: ApiService) {}
 
   ngOnInit(): void {
     this.fetchRooms();
     this.fetchRoomTypes();
   }
 
-
-
-  showError(msg: string) {
-    this.error = msg;
-    setTimeout(() => {
-      this.error = "";
-    }, 4000);
-  }
-  
   // Fetch all rooms from the API
   fetchRooms() {
+    this.loading = true;
+    this.error = null;
     this.apiService.getAllRooms().subscribe({
       next: (response: any) => {
-        this.rooms = response.rooms;
-        this.filteredRooms = response.rooms;
+        this.rooms = response.rooms || [];
+        this.filterRooms(this.selectedRoomType);
+        this.loading = false;
       },
       error: (error) => {
-        this.showError('Error fetching rooms:' + error);
+        this.loading = false;
+        this.error = error?.error?.message || 'We couldn’t load rooms. Check your connection and try again.';
       }
   });
   }
@@ -58,17 +57,11 @@ export class ManageroomsComponent {
       next: (types: string[]) => {
         this.roomTypes = types;
       },
-      error: (error) => {
-        this.showError('Error fetching room types: ' + error);
+      error: () => {
+        // The filter falls back to "All"; the table itself still works
+        this.roomTypes = [];
       },
     });
-  }
-
-  // Handle changes to room type filter
-  handleRoomTypeChange(event: any) {
-    const selectedType = event.target.value;
-    this.selectedRoomType = selectedType;
-    this.filterRooms(selectedType);
   }
 
   // Filter rooms by type
@@ -81,17 +74,14 @@ export class ManageroomsComponent {
     this.currentPage = 1; // Reset to first page when filter changes
   }
 
-  // Pagination logic
-  get indexOfLastRoom() {
-    return this.currentPage * this.roomsPerPage;
-  }
-
-  get indexOfFirstRoom() {
-    return this.indexOfLastRoom - this.roomsPerPage;
+  toggleSort(key: string): void {
+    this.sort.toggle(key);
+    this.currentPage = 1;
   }
 
   get currentRooms() {
-    return this.filteredRooms.slice(this.indexOfFirstRoom, this.indexOfLastRoom);
+    const indexOfLastRoom = this.currentPage * this.roomsPerPage;
+    return this.sort.apply(this.filteredRooms).slice(indexOfLastRoom - this.roomsPerPage, indexOfLastRoom);
   }
 
   // Pagination function to change page
@@ -99,8 +89,11 @@ export class ManageroomsComponent {
     this.currentPage = pageNumber;
   }
 
-  // Navigate to Add Room page
-  navigateToAddRoom() {
-    this.router.navigate(['/admin/add-room']);
+  getImageUrl(imagePath: string): string {
+    return this.apiService.getImageUrl(imagePath);
+  }
+
+  onImageError(event: Event): void {
+    (event.target as HTMLImageElement).style.visibility = 'hidden';
   }
 }

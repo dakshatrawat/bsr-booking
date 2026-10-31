@@ -1,58 +1,98 @@
-<div *ngIf="isLoading" class="loading-container">
-    <span class="loading">Loading...</span>
-  </div>
-  
-  <div *ngIf="!isLoading" class="details-container">
-    <!-- Room Details -->
-    <h2 class="room-title">Room Details</h2>
-    <img [src]="getImageUrl(room?.imageUrl)" [alt]="room?.type" class="room-image" (error)="onImageError($event)" />
-    <div class="details-info">
-      <h3>{{ room?.type }}</h3>
-      <p><strong>Room Number:</strong> {{ room?.roomNumber }}</p>
-      <p><strong>Capacity:</strong> {{ room?.capacity }}</p>
-      <p><strong>Price:</strong> ${{ room?.pricePerNight }} / night</p>
-      <p>{{ room?.description }}</p>
+<div class="page">
+  <header class="page-header">
+    <div class="page-header__text">
+      <p class="page-header__eyebrow">
+        <a routerLink="/rooms"><i class="fas fa-arrow-left" aria-hidden="true"></i> Rooms</a>
+      </p>
+      <h1 *ngIf="room">{{ room.type | titlecase }} room</h1>
+      <h1 *ngIf="!room">Room details</h1>
+      <p *ngIf="room" class="page-header__description">
+        Room <span class="num">{{ room.roomNumber }}</span>
+        <ng-container *ngIf="room.capacity"> · Sleeps <span class="num">{{ room.capacity }}</span></ng-container>
+      </p>
     </div>
-  
-    <!-- Booking Controls -->
-    <div class="booking-info">
-      <button class="book-now-button" (click)="showDatePicker = !showDatePicker">
-        {{ showDatePicker ? 'Hide Calendar' : 'Select Dates' }}
-      </button>
-  
-      <!-- Calendar Component -->
-      <div *ngIf="showDatePicker" class="calendar-wrapper">
-        <app-calendar 
-          [roomId]="roomId" 
+  </header>
+
+  <div *ngIf="loadError" class="card empty-state" role="alert">
+    <span class="empty-state__icon empty-state__icon--danger" aria-hidden="true"><i class="fas fa-triangle-exclamation"></i></span>
+    <h2>We couldn't load this room</h2>
+    <p>{{ loadError }}</p>
+    <div class="empty-state__actions">
+      <button type="button" class="btn btn-primary" (click)="fetchRoomDetails(roomId)">Try again</button>
+      <a routerLink="/rooms" class="btn btn-ghost">Back to rooms</a>
+    </div>
+  </div>
+
+  <!-- Loading skeleton matches the final layout so nothing jumps -->
+  <div *ngIf="loading" class="split" aria-busy="true" aria-label="Loading room">
+    <div class="card">
+      <span class="skeleton media-frame"></span>
+      <span class="skeleton skeleton--text" style="margin-top: var(--space-4)"></span>
+      <span class="skeleton skeleton--text" style="width: 70%; margin-top: var(--space-2)"></span>
+    </div>
+    <div class="card">
+      <span class="skeleton skeleton--title"></span>
+      <span class="skeleton" style="height: 40px; margin-top: var(--space-4)"></span>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && room" class="split">
+    <div>
+      <section class="card" aria-labelledby="room-about">
+        <div class="media-frame room__image" [class.is-missing]="imageFailed">
+          <img *ngIf="!imageFailed" [src]="getImageUrl(room.imageUrl)" [alt]="(room.type | titlecase) + ' room ' + room.roomNumber"
+            width="800" height="500" decoding="async" (error)="imageFailed = true" />
+          <i *ngIf="imageFailed" class="fas fa-image" aria-hidden="true"></i>
+        </div>
+        <h2 id="room-about" class="card__title room__heading">About this room</h2>
+        <p *ngIf="room.description" class="room__description">{{ room.description }}</p>
+        <dl class="dl room__facts">
+          <div><dt>Room number</dt><dd class="num">{{ room.roomNumber }}</dd></div>
+          <div *ngIf="room.capacity"><dt>Sleeps</dt><dd class="num">{{ room.capacity }}</dd></div>
+          <div><dt>Price</dt><dd class="num">{{ room.pricePerNight | currency: 'INR' : 'symbol' : '1.0-2' }} / night</dd></div>
+        </dl>
+      </section>
+
+      <section class="card" aria-labelledby="room-dates">
+        <header class="card__header">
+          <div>
+            <h2 id="room-dates" class="card__title">Choose your dates</h2>
+            <p class="card__subtitle">Pick each night you'd like to stay. Booked nights can't be selected.</p>
+          </div>
+        </header>
+        <app-calendar
+          [roomId]="roomId"
           [showRoomBookings]="true"
           (datesSelected)="onDatesSelected($event)">
         </app-calendar>
-        
-        <div *ngIf="selectedDates.length > 0" class="selected-dates-info">
-          <p><strong>Selected Dates ({{ selectedDates.length }}):</strong></p>
-          <p>{{ selectedDates.join(', ') }}</p>
-        </div>
-        
-        <button (click)="handleConfirmation()" class="proceed-button" [disabled]="selectedDates.length === 0">
-          Proceed
-        </button>
-        
-        <!-- Success and Error Messages -->
-        <p *ngIf="message" class="success-message">{{ message }}</p>
-        <p *ngIf="error" class="error-message">{{ error }}</p>
-      </div>
-  
-      <!-- Booking Preview and Submit -->
-      <div *ngIf="showBookingPreview" class="preview-container">
-        <h3>Booking Preview</h3>
-        <p><strong>Selected Dates:</strong> {{ selectedDates.join(', ') }}</p>
-        <p><strong>Check-in Date:</strong> {{ selectedDates.length > 0 ? selectedDates.sort()[0] : 'N/A' }}</p>
-        <p><strong>Check-out Date:</strong> {{ selectedDates.length > 0 ? selectedDates.sort()[selectedDates.length - 1] : 'N/A' }}</p>
-        <p><strong>Total Days To Stay:</strong> {{ totalDaysToStay }}</p>
-        <p><strong>Total Price:</strong> ${{ totalPrice }}</p>
-        <button (click)="acceptBooking()" class="confirm-booking-button">Confirm and Book</button>
-        <button class="cancel-button" (click)="cancelBookingPreview()">Cancel</button>
-      </div>
+      </section>
     </div>
+
+    <aside class="card stay-card" aria-labelledby="stay-title">
+      <h2 id="stay-title" class="card__title">Your stay</h2>
+      <p class="stay-card__rate">
+        <strong class="num">{{ room.pricePerNight | currency: 'INR' : 'symbol' : '1.0-0' }}</strong> / night
+      </p>
+
+      <dl *ngIf="selectedDates.length > 0" class="dl stay-card__summary" aria-live="polite">
+        <div><dt>Check-in</dt><dd class="num">{{ checkInDate | date: 'EEE d MMM y' }}</dd></div>
+        <div><dt>Check-out</dt><dd class="num">{{ checkOutDate | date: 'EEE d MMM y' }}</dd></div>
+        <div><dt>Nights</dt><dd class="num">{{ selectedDates.length }}</dd></div>
+        <div class="stay-card__total"><dt>Total</dt><dd class="num">{{ totalPrice | currency: 'INR' : 'symbol' : '1.0-2' }}</dd></div>
+      </dl>
+      <p *ngIf="selectedDates.length === 0" class="stay-card__empty">Select your nights on the calendar to see the total.</p>
+
+      <div *ngIf="error" class="alert alert--danger" role="alert">
+        <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+        <div class="alert__body">{{ error }}</div>
+      </div>
+
+      <button type="button" class="btn btn-primary btn-block btn-lg"
+        [class.is-loading]="booking" [disabled]="booking || selectedDates.length === 0" [attr.aria-busy]="booking"
+        (click)="acceptBooking()">
+        <span>Book and pay</span>
+      </button>
+      <p class="stay-card__note">You'll confirm payment on the next step.</p>
+    </aside>
   </div>
-  
+</div>

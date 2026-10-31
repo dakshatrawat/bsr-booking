@@ -1,7 +1,9 @@
-import { Component, HostListener, ElementRef, ViewChild } from '@angular/core';
+import { Component, HostListener, ElementRef } from '@angular/core';
 import { ApiService } from '../service/api.service';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { ToastService } from '../ui/toast.service';
+import { ThemeService } from '../ui/theme.service';
 
 
 @Component({
@@ -12,10 +14,16 @@ import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 })
 export class NavbarComponent {
   isMenuOpen: boolean = false;
+  isScrolled: boolean = false;
 
-  @ViewChild('navMenu') navMenu!: ElementRef;
+  constructor(private router: Router, private apiService: ApiService, private elementRef: ElementRef, private toast: ToastService, public themeService: ThemeService){}
 
-  constructor(private router: Router, private apiService: ApiService, private elementRef: ElementRef){}
+  // Lift the header off the page once content scrolls under it
+  @HostListener('window:scroll')
+  onScroll(): void {
+    const scrolled = window.scrollY > 4;
+    if (scrolled !== this.isScrolled) this.isScrolled = scrolled;
+  }
 
   get isAuthemticated():boolean{
     return this.apiService.isAuthenticated();
@@ -37,13 +45,12 @@ export class NavbarComponent {
     this.isMenuOpen = false;
   }
 
+  // Logging out is not destructive, so no confirmation: just do it and say so
   handleLogout(): void{
-    const isLogout = window.confirm("Are you sure you want to logout? ")
-    if (isLogout) {
-      this.apiService.logout();
-      this.router.navigate(['/home'])
-      this.closeMenu();
-    }
+    this.apiService.logout();
+    this.closeMenu();
+    this.router.navigate(['/home']);
+    this.toast.info('You have been logged out');
   }
 
   // Close menu when clicking outside
@@ -54,8 +61,11 @@ export class NavbarComponent {
     }
   }
 
-  // Close menu when route changes
-  onNavClick(): void {
-    this.closeMenu();
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.isMenuOpen) {
+      this.closeMenu();
+      this.elementRef.nativeElement.querySelector('.menu-toggle')?.focus();
+    }
   }
 }

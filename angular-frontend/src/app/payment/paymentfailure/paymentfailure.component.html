@@ -1,7 +1,11 @@
-<div>
-    <h1>Payment Failed</h1>
-    <p>Unfortunately, your payment for booking reference <strong>{{ bookingReference }}</strong> could not be processed.</p>
-    <p>Please try again, and if the issue persists, contact our customer support on +184563798577.</p>
-    <a routerLink="/">Go to Home</a>
-  </div>
-  
+<div class="page page--form">
+  <section class="card empty-state" aria-labelledby="pay-result-title">
+    <span class="empty-state__icon empty-state__icon--danger" aria-hidden="true"><i class="fas fa-xmark"></i></span>
+    <h1 id="pay-result-title">Payment didn't go through</h1>
+    <p>We couldn't take payment for booking <strong class="num">{{ bookingReference }}</strong>. You haven't been charged. Try again from your bookings, or call us on <a href="tel:+919410582284" class="num">+91 94105 82284</a>.</p>
+    <div class="empty-state__actions">
+      <a routerLink="/profile" class="btn btn-primary">Try again</a>
+      <a routerLink="/home" class="btn btn-ghost">Back to home</a>
+    </div>
+  </section>
+</div>

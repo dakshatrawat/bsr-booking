@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 import { ApiService } from '../../service/api.service';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
+import { ToastService } from '../../ui/toast.service';
 
 
 @Component({
@@ -13,7 +14,7 @@ import { RouterLink, Router } from '@angular/router';
 })
 export class AdminregisterComponent {
 
-  constructor(private apiService: ApiService, private router: Router) {}
+  constructor(private apiService: ApiService, private router: Router, private toast: ToastService) {}
 
   formData: any = {
     firstName: '',
@@ -21,43 +22,33 @@ export class AdminregisterComponent {
     email: '',
     phoneNumber: '',
     password: '',
-    role: '',
+    role: 'CUSTOMER',
   };
 
-  message: string | null = null;
+  error: string | null = null;
+  showPassword = false;
+  submitting = false;
 
-  handleSubmit() {
-    if (
-      !this.formData.email ||
-      !this.formData.firstName ||
-      !this.formData.lastName ||
-      !this.formData.phoneNumber ||
-      !this.formData.password ||
-      !this.formData.role
-    ) {
-      this.showError('All fields are required');
+  handleSubmit(form: NgForm) {
+    this.error = null;
+
+    // Field-level messages are shown inline by the template
+    if (form.invalid) {
       return;
     }
 
+    this.submitting = true;
     this.apiService.registerUser(this.formData).subscribe({
-      next: (res) => {
+      next: () => {
+        this.submitting = false;
+        this.toast.success('User created', `${this.formData.firstName} can now log in.`);
         this.router.navigate(['/admin']);
       },
       error: (err) => {
-        this.showError(
-          err?.error?.message ||
-            err.message ||
-            'Unable To Register a user: ' + err
-        );
+        this.submitting = false;
+        this.error = err?.error?.message || 'We couldn’t create this user. Check the details and try again.';
       },
     });
-  }
-
-  showError(msg: string) {
-    this.message = msg;
-    setTimeout(() => {
-      this.message = null;
-    }, 4000);
   }
 
 }

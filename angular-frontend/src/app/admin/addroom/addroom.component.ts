@@ -1,14 +1,15 @@
 import { Component } from '@angular/core';
 import { ApiService } from '../../service/api.service';
-import { Router } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+import { FormsModule, NgForm } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { ToastService } from '../../ui/toast.service';
 
 
 
 @Component({
   selector: 'app-addroom',
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule, RouterLink],
   templateUrl: './addroom.component.html',
   styleUrl: './addroom.component.css'
 })
@@ -25,25 +26,18 @@ export class AddroomComponent {
   };
 
   roomTypes: string[] = [];
-  newRoomType: string = '';
 
   file: File | null = null;
   preview: string | null = null;
+  fileError: string = '';
 
-  error: any = null;
-  success: string = '';
-  
- constructor(private apiService: ApiService, private router: Router) {}
+  error: string = '';
+  saving: boolean = false;
+
+ constructor(private apiService: ApiService, private router: Router, private toast: ToastService) {}
 
   ngOnInit(): void {
     this.fetchRoomTypes();
-  }
-
-  showError(msg: string) {
-    this.error = msg;
-    setTimeout(() => {
-      this.error = null;
-    }, 4000); // Clear the error after 5 seconds
   }
 
 
@@ -55,47 +49,34 @@ export class AddroomComponent {
         this.roomTypes = types;
       },
       error: (err) => {
-        this.showError(
-          err?.error?.message || 'Error fetching room types: ' + err
-        );
+        this.error = err?.error?.message || 'Room types didn’t load, so the type list is empty. Reload the page to try again.';
       },
     });
-  }
-
-  // Handle form input changes
-  handleChange(event: Event) {
-    const { name, value } = <HTMLInputElement>event.target;
-    this.roomDetails = { ...this.roomDetails, [name]: value };
-  }
-
-  // Handle room type change
-  handleRoomTypeChange(event: Event) {
-    this.roomDetails.type = (<HTMLSelectElement>event.target).value;
   }
 
   // Handle file input change (image upload)
   handleFileChange(event: Event) {
     const input = <HTMLInputElement>event.target;
     const selectedFile = input.files ? input.files[0] : null;
+    this.fileError = '';
     if (selectedFile) {
       // Validate file type
       if (!selectedFile.type.startsWith('image/')) {
-        this.showError('Please select a valid image file (JPG, PNG, etc.)');
+        this.fileError = 'Choose an image file, such as JPG or PNG.';
         input.value = ''; // Clear the input
         return;
       }
-      
+
       // Validate file size (max 5MB)
       const maxSize = 5 * 1024 * 1024; // 5MB in bytes
       if (selectedFile.size > maxSize) {
-        this.showError('Image size should be less than 5MB');
+        this.fileError = 'This image is larger than 5 MB. Choose a smaller one.';
         input.value = ''; // Clear the input
         return;
       }
-      
+
       this.file = selectedFile;
       this.preview = URL.createObjectURL(selectedFile);
-      console.log('File selected:', selectedFile.name, 'Size:', selectedFile.size);
     } else {
       this.file = null;
       this.preview = null;
@@ -103,23 +84,14 @@ export class AddroomComponent {
   }
 
   // Add room function
-  addRoom() {
-    if (
-      !this.roomDetails.type ||
-      !this.roomDetails.pricePerNight ||
-      !this.roomDetails.capacity ||
-      !this.roomDetails.roomNumber
-    ) {
-      this.showError('All room details must be provided.');
-      return;
+  addRoom(form: NgForm) {
+    this.error = '';
+    if (!this.file && !this.fileError) {
+      this.fileError = 'Add a photo of the room.';
     }
 
-    if (!this.file) {
-      this.showError('Please select a room photo.');
-      return;
-    }
-
-    if (!window.confirm('Do you want to add this room?')) {
+    // Field-level messages are shown inline by the template
+    if (form.invalid || !this.file) {
       return;
     }
 
@@ -131,25 +103,16 @@ export class AddroomComponent {
     formData.append('description', this.roomDetails.description || '');
     formData.append('imageFile', this.file, this.file.name);
 
-    console.log('FormData contents:');
-    console.log('Type:', this.roomDetails.type);
-    console.log('Price:', this.roomDetails.pricePerNight);
-    console.log('Capacity:', this.roomDetails.capacity);
-    console.log('Room Number:', this.roomDetails.roomNumber);
-    console.log('File:', this.file.name, 'Size:', this.file.size);
-
+    this.saving = true;
     this.apiService.addRoom(formData).subscribe({
-      next: (response) => {
-        console.log('Room added successfully:', response);
-        this.success = 'Room Added successfully.';
-        setTimeout(() => {
-          this.success = '';
-          this.router.navigate(['/admin/manage-rooms']);
-        }, 5000);
+      next: () => {
+        this.saving = false;
+        this.toast.success('Room added', `Room ${this.roomDetails.roomNumber} is now bookable.`);
+        this.router.navigate(['/admin/manage-rooms']);
       },
       error: (error) => {
-        console.error('Error adding room:', error);
-        this.showError(error?.error?.message || error?.message || 'Error adding room. Please try again.');
+        this.saving = false;
+        this.error = error?.error?.message || 'The room wasn’t added. Check the details and try again.';
       },
     });
   }

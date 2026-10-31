@@ -1,274 +1,193 @@
-/* Skyscanner-Style Navigation */
-
 .navbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
-  background: var(--pure-white);
-  border-bottom: 1px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
-  z-index: var(--z-sticky);
-  height: 64px;
+  height: var(--navbar-h);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  transition: box-shadow var(--duration) var(--ease-out);
 }
 
+.navbar.is-scrolled { box-shadow: var(--shadow-md); }
+
+.theme-toggle {
+  order: 3;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: var(--control-h);
+  height: var(--control-h);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  transition: background-color var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+}
+
+.theme-toggle:hover { background: var(--color-surface-muted); color: var(--color-text); }
+.theme-toggle i { transition: transform var(--duration) var(--ease-out); }
+.theme-toggle:active i { transform: rotate(-30deg) scale(0.9); }
+
 .nav-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
   height: 100%;
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 0 var(--page-gutter);
 }
 
 .brand {
-  flex-shrink: 0;
-}
-
-.brand-link {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-    text-decoration: none;
-  transition: color 0.2s ease;
+  gap: var(--space-2);
+  min-height: var(--touch-target);
+  color: var(--color-text);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
 }
 
-.brand-link i {
-  font-size: 1.25rem;
-  color: var(--skyscanner-blue);
+.brand:hover { color: var(--color-text); }
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-size: var(--text-sm);
 }
 
 .brand-name {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--skyscanner-blue);
-  letter-spacing: -0.2px;
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.01em;
 }
 
-.brand-link:hover .brand-name {
-  color: var(--skyscanner-blue-dark);
+.nav-panel {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
 }
 
-.nav-menu {
-    list-style: none;
-    display: flex;
-    align-items: center;
-  gap: 0;
-    margin: 0;
-    padding: 0;
-    flex-wrap: wrap;
-}
-
-.nav-menu li {
-  margin: 0;
-}
-
-.nav-menu a {
+.nav-links {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 12px 16px;
-  color: var(--text-primary);
+  gap: var(--space-1);
+  list-style: none;
+}
+
+.nav-links a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: var(--control-h);
+  padding: 0 var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--color-text-muted);
   text-decoration: none;
-  font-weight: 500;
-  font-size: 14px;
-  transition: all 0.2s ease;
-  border-radius: 4px;
+  border-radius: var(--radius-md);
+  transition: color var(--duration-fast) var(--ease-out), background-color var(--duration-fast) var(--ease-out);
 }
 
-.nav-menu a:hover {
-  color: var(--skyscanner-blue);
-  background-color: var(--gray-50);
+.nav-links a:hover {
+  color: var(--color-text);
+  background: var(--color-surface-muted);
 }
 
-.nav-menu a.active {
-  color: var(--skyscanner-blue);
-  font-weight: 600;
+/* Active page: text colour + underline, not colour alone */
+.nav-links a.is-active { color: var(--color-text); }
+.nav-links a.is-active::after {
+  content: "";
+  position: absolute;
+  left: var(--space-3);
+  right: var(--space-3);
+  bottom: calc((var(--navbar-h) - var(--control-h)) / -2);
+  height: 2px;
+  background: var(--color-accent);
+  border-radius: 2px 2px 0 0;
 }
 
-.nav-menu a i {
-  font-size: 0.9rem;
-}
-
-.btn-login {
-  color: var(--text-secondary) !important;
-}
-
-.btn-register {
-  color: var(--skyscanner-blue) !important;
-  font-weight: 600 !important;
-}
-
-.btn-register:hover {
-  background-color: var(--skyscanner-blue-light) !important;
-}
-
-.logout-btn {
+.nav-actions {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 12px 16px;
-  color: var(--text-secondary);
-  font-weight: 500;
-  font-size: 14px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: color 0.2s ease;
+  gap: var(--space-2);
 }
 
-.logout-btn:hover {
-  color: var(--skyscanner-blue);
-  background-color: var(--gray-50);
-}
+.nav-actions .btn.is-active { color: var(--color-text); background: var(--color-surface-muted); }
 
-.logout-btn i {
-  font-size: 0.9rem;
-}
-
-/* Responsive */
-@media (max-width: 968px) {
-  .nav-container {
-    padding: 0 12px;
-    flex-wrap: wrap;
-  }
-
-  .nav-menu {
-    width: 100%;
-    justify-content: flex-start;
-    margin-top: 0.5rem;
-    gap: 0;
-  }
-
-  .nav-menu a {
-    padding: 10px 12px;
-    font-size: 13px;
-  }
-
-  .brand-name {
-    font-size: 18px;
-  }
-}
-
-/* Hamburger Menu Button (Mobile Only) */
-.hamburger-menu {
+.menu-toggle {
+  order: 4;
   display: none;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: var(--spacing-xs);
-  color: var(--text-primary);
-  font-size: 24px;
-  transition: color 0.2s ease;
-  z-index: calc(var(--z-sticky) + 1);
-  -webkit-tap-highlight-color: transparent;
+  place-items: center;
+  width: var(--touch-target);
+  height: var(--touch-target);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  font-size: var(--text-lg);
 }
 
-.hamburger-menu:hover {
-  color: var(--skyscanner-blue);
-}
+.menu-toggle:hover { background: var(--color-surface-muted); }
 
-.hamburger-menu:focus {
-  outline: none;
-  color: var(--skyscanner-blue);
-}
+@media (max-width: 899px) {
+  .menu-toggle { display: grid; }
+  .theme-toggle { margin-left: auto; width: var(--touch-target); height: var(--touch-target); }
+  .nav-container { gap: var(--space-2); }
 
-@media (max-width: 768px) {
-  .nav-container {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--spacing-sm) var(--container-padding);
-    height: 60px;
-    position: relative;
-  }
-
-  .navbar {
-    height: 60px;
-    min-height: 60px;
-  }
-
-  /* Show hamburger menu */
-  .hamburger-menu {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    border-radius: var(--border-radius);
-  }
-
-  /* Hide nav menu by default on mobile */
-  .nav-menu {
+  .nav-panel {
     position: absolute;
     top: 100%;
-    right: 0;
     left: 0;
-    background: var(--pure-white);
+    right: 0;
+    z-index: var(--z-dropdown);
+    display: none;
     flex-direction: column;
     align-items: stretch;
-    width: 100%;
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: none;
-    border-top: 1px solid var(--border-color);
-    padding: 0;
-    margin: 0;
-    gap: 0;
-    z-index: var(--z-dropdown);
-  }
-
-  /* Show menu when open */
-  .nav-menu.menu-open {
-    max-height: 80vh;
+    gap: var(--space-3);
+    max-height: calc(100dvh - var(--navbar-h));
     overflow-y: auto;
+    padding: var(--space-2) var(--page-gutter) var(--space-4);
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
     box-shadow: var(--shadow-lg);
-    padding: var(--spacing-xs) 0;
   }
 
-  .nav-menu li {
+  .nav-panel.is-open {
+    display: flex;
+    animation: menu-in var(--duration) var(--ease-out);
+  }
+
+  .nav-links { flex-direction: column; align-items: stretch; gap: 0; }
+
+  .nav-links a {
     width: 100%;
-    margin: 0;
+    height: var(--touch-target);
+    font-size: var(--text-md);
   }
 
-  .nav-menu a,
-  .nav-menu .logout-btn {
-    width: 100%;
-    padding: var(--spacing-md) var(--container-padding);
-    font-size: var(--font-size-base);
-    justify-content: flex-start;
-    border-radius: 0;
-    border-bottom: 1px solid var(--border-color);
+  .nav-links a.is-active { background: var(--color-accent-subtle); }
+  .nav-links a.is-active::after {
+    left: 0;
+    right: auto;
+    top: var(--space-2);
+    bottom: var(--space-2);
+    width: 3px;
+    height: auto;
+    border-radius: 0 2px 2px 0;
   }
 
-  .nav-menu a:last-child,
-  .nav-menu .logout-btn:last-child {
-    border-bottom: none;
+  .nav-actions {
+    flex-direction: column;
+    align-items: stretch;
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--color-border);
   }
 
-  .nav-menu a:hover,
-  .nav-menu .logout-btn:hover {
-    background-color: var(--gray-50);
-    color: var(--skyscanner-blue);
-  }
+  .nav-actions .btn { height: var(--touch-target); justify-content: center; }
+}
 
-  .nav-menu a.active {
-    background-color: var(--skyscanner-blue-light);
-    color: var(--skyscanner-blue);
-    font-weight: 600;
-  }
-
-  .brand-name {
-    font-size: 16px;
-  }
-
-  .brand-link {
-    gap: var(--spacing-xs);
-  }
-
-  .brand-link i {
-    font-size: 1.1rem;
-  }
+@keyframes menu-in {
+  from { opacity: 0; transform: translateY(-4px); }
 }

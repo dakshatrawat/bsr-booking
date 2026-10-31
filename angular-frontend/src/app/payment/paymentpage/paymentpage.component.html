@@ -1,20 +1,37 @@
-<div class="payment">
-    <div *ngIf="error" class="error">{{ error }}</div>
-  
+<div class="page page--form">
+  <header class="page-header">
+    <div class="page-header__text">
+      <p class="page-header__eyebrow">
+        <a routerLink="/profile"><i class="fas fa-arrow-left" aria-hidden="true"></i> My account</a>
+      </p>
+      <h1>Complete your payment</h1>
+      <p class="page-header__description">You'll pay securely through Razorpay.</p>
+    </div>
+  </header>
 
-    <h3>Complete Your Payment</h3>
-    
-    <strong>Amount to Pay: ₹{{ amount?.toFixed(2) }}</strong>
-  
-    <form (ngSubmit)="handleSubmit($event)">
-      <div class="payment-info">
-        <p>Click the button below to proceed with payment via Razorpay</p>
-        <p class="booking-ref">Booking Reference: {{ bookingReference }}</p>
+  <form class="card" (ngSubmit)="handleSubmit($event)">
+    <div *ngIf="error" class="alert alert--danger" role="alert">
+      <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+      <div class="alert__body">{{ error }}</div>
+    </div>
+
+    <dl class="dl">
+      <div>
+        <dt>Booking reference</dt>
+        <dd class="num">{{ bookingReference }}</dd>
       </div>
-  
-      <button [disabled]="processing || !razorpayOrderId" type="submit">
-        {{ processing ? "Processing..." : "Pay Now" }}
-      </button>
-    </form>
-  </div>
-  
+      <div>
+        <dt>Amount to pay</dt>
+        <dd class="num payment__amount">{{ amount | currency: 'INR' : 'symbol' : '1.2-2' }}</dd>
+      </div>
+    </dl>
+
+    <button type="submit" class="btn btn-primary btn-block btn-lg payment__pay"
+      [class.is-loading]="processing || (!razorpayOrderId && !error)"
+      [disabled]="processing || !razorpayOrderId"
+      [attr.aria-busy]="processing || (!razorpayOrderId && !error)">
+      <span>{{ processing ? 'Processing…' : !razorpayOrderId && !error ? 'Preparing payment…' : 'Pay now' }}</span>
+    </button>
+    <p class="payment__note"><i class="fas fa-lock" aria-hidden="true"></i> Card, UPI and net banking are handled by Razorpay. We never see your card details.</p>
+  </form>
+</div>

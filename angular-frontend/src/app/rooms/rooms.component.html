@@ -1,28 +1,65 @@
-<div class="container">
-    <p *ngIf="error" class="error">{{ error }}</p>
-      <h2>All Rooms</h2>
-    
-      <!-- Room Filter Section -->
-      <div class="filter">
-        <label><i class="fas fa-filter"></i> Filter By Room Type</label>
-        <select [(ngModel)]="selectedRoomType" (change)="handleRoomTypeChange($event)">
-          <option value="">All</option>
+<div class="page">
+  <header class="page-header">
+    <div class="page-header__text">
+      <h1>Rooms</h1>
+      <p class="page-header__description">Browse every room, or pick your dates to see what's free.</p>
+    </div>
+  </header>
+
+  <section class="card availability" aria-labelledby="availability-title">
+    <h2 id="availability-title" class="card__title">Check availability</h2>
+    <p class="card__subtitle">Choose a room type and your dates, then search.</p>
+    <div class="availability__form">
+      <app-roomsearch (searchResults)="handleSearchResult($event)"></app-roomsearch>
+    </div>
+  </section>
+
+  <section aria-labelledby="results-title">
+    <div class="toolbar results-toolbar">
+      <div class="results-heading">
+        <h2 id="results-title" class="results-title">{{ showingSearchResults ? 'Available for your dates' : 'All rooms' }}</h2>
+        <button *ngIf="showingSearchResults" type="button" class="btn btn-ghost btn-sm" (click)="resetSearch()">Show all rooms</button>
+      </div>
+      <div class="field field--inline">
+        <label class="field__label" for="rooms-type-filter">Room type</label>
+        <select id="rooms-type-filter" class="select" [(ngModel)]="selectedRoomType" (ngModelChange)="filterRooms($event)">
+          <option value="">All types</option>
           <option *ngFor="let type of roomTypes" [value]="type">{{ type }}</option>
         </select>
       </div>
-    
-      <!-- Room Search Component -->
-      <app-roomsearch (searchResults)="handleSearchResult($event)"></app-roomsearch>
-    
-      <!-- Room Result Component -->
-      <app-roomresult [roomSearchResults]="currentRooms"></app-roomresult>
-    
-      <!-- Pagination Component -->
+    </div>
+
+    <div *ngIf="error" class="alert alert--danger" role="alert">
+      <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+      <div class="alert__body">{{ error }}</div>
+      <button type="button" class="btn btn-secondary btn-sm alert__action" (click)="fetchRooms()">Try again</button>
+    </div>
+
+    <div *ngIf="loading" class="room-skeletons" aria-busy="true" aria-label="Loading rooms">
+      <div *ngFor="let card of skeletonCards" class="card room-skeleton">
+        <span class="skeleton room-skeleton__image"></span>
+        <span class="skeleton skeleton--text" style="width: 50%"></span>
+        <span class="skeleton skeleton--text" style="width: 90%"></span>
+        <span class="skeleton skeleton--text" style="width: 30%"></span>
+      </div>
+    </div>
+
+    <ng-container *ngIf="!loading && !error">
+      <app-roomresult *ngIf="filteredRooms.length > 0" [roomSearchResults]="currentRooms"></app-roomresult>
+
+      <div *ngIf="filteredRooms.length === 0" class="card empty-state">
+        <span class="empty-state__icon" aria-hidden="true"><i class="fas fa-bed"></i></span>
+        <h3>{{ showingSearchResults ? 'Nothing free for those dates' : 'No rooms of this type' }}</h3>
+        <p>{{ showingSearchResults ? 'Try different dates or another room type. Or call us on +91 94105 82284 and we’ll help.' : 'Choose another type to see more rooms.' }}</p>
+        <button type="button" class="btn btn-secondary" (click)="resetSearch()">Show all rooms</button>
+      </div>
+
       <app-pagination
         [roomPerPage]="roomsPerPage"
         [totalRooms]="filteredRooms.length"
         [currentPage]="currentPage"
         (paginate)="paginate($event)"
       ></app-pagination>
-    </div>
-    
+    </ng-container>
+  </section>
+</div>

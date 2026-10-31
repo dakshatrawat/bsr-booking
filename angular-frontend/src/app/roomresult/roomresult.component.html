@@ -1,29 +1,39 @@
-<!-- room-result.component.html -->
-<section>
-    <div *ngIf="roomSearchResults && roomSearchResults.length > 0">
-      <div
-        *ngFor="let room of roomSearchResults"
-        class="item"
-        [attr.key]="room.id"
-      >
-        <img [src]="getImageUrl(room.imageUrl)" [alt]="room.roomNumber" (error)="onImageError($event)" />
-  
-        <div class="details">
-          <h3>{{ room.type }}</h3>
-          <p>Price: ₹{{ room.pricePerNight }}/Night</p>
-          <p>Description: {{ room.description }}</p>
-        </div>
-  
-        <div class="book-now">
-          <!-- Conditionally render button based on admin status -->
-          <button *ngIf="isAdmin" (click)="navigateToEditRoom(room.id)">
-            Edit Room
-          </button>
-          <button *ngIf="!isAdmin" (click)="navigateToRoomDetails(room.id)">
-            View/Book Now
-          </button>
-        </div>
+<ul *ngIf="roomSearchResults && roomSearchResults.length > 0" class="room-grid">
+  <li *ngFor="let room of roomSearchResults" class="room-card">
+    <div class="media-frame room-card__image" [class.is-missing]="failedImages.has(room.id)">
+      <img
+        *ngIf="!failedImages.has(room.id)"
+        [src]="getImageUrl(room.imageUrl)"
+        [alt]="room.type + ' room ' + room.roomNumber"
+        width="400" height="250" loading="lazy" decoding="async"
+        (error)="onImageError(room.id)"
+      />
+      <i *ngIf="failedImages.has(room.id)" class="fas fa-image" aria-hidden="true"></i>
+    </div>
+
+    <div class="room-card__body">
+      <div class="room-card__head">
+        <h3 class="room-card__title">{{ room.type | titlecase }}</h3>
+        <span *ngIf="room.capacity" class="room-card__meta">
+          <i class="fas fa-user-group" aria-hidden="true"></i>
+          Sleeps <span class="num">{{ room.capacity }}</span>
+        </span>
+      </div>
+      <p *ngIf="room.description" class="room-card__description">{{ room.description }}</p>
+
+      <div class="room-card__footer">
+        <p class="room-card__price">
+          <strong class="num">{{ room.pricePerNight | currency: 'INR' : 'symbol' : '1.0-0' }}</strong>
+          <span>/ night</span>
+        </p>
+        <button *ngIf="isAdmin" type="button" class="btn btn-secondary" (click)="navigateToEditRoom(room.id)">
+          Edit room
+        </button>
+        <button *ngIf="!isAdmin" type="button" class="btn btn-secondary" (click)="navigateToRoomDetails(room.id)"
+          [attr.aria-label]="'View ' + room.type + ' room ' + room.roomNumber + ' and book'">
+          View &amp; book
+        </button>
       </div>
     </div>
-  </section>
-  
+  </li>
+</ul>

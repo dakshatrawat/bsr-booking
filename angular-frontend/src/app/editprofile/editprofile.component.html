@@ -1,18 +1,87 @@
-<div class="profile">
-    <h2>Edit Profile</h2>
-  
-    <!-- Error Message -->
-    <p *ngIf="error" class="error">{{ error }}</p>
-  
-    <!-- User Profile Details -->
-    <div *ngIf="user">
-      <p><strong>First Name:</strong> {{ user.firstName }}</p>
-      <p><strong>Last Name:</strong> {{ user.lastName }}</p>
-      <p><strong>Email:</strong> {{ user.email }}</p>
-      <p><strong>Phone Number:</strong> {{ user.phoneNumber }}</p>
-  
-      <!-- Button to delete account -->
-      <button (click)="handleDeleteProfile()">Delete My Account</button>
+<div class="page page--narrow">
+  <header class="page-header">
+    <div class="page-header__text">
+      <p class="page-header__eyebrow">
+        <a routerLink="/profile"><i class="fas fa-arrow-left" aria-hidden="true"></i> My account</a>
+      </p>
+      <h1>Account settings</h1>
     </div>
+  </header>
+
+  <div *ngIf="error" class="alert alert--danger" role="alert">
+    <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+    <div class="alert__body">{{ error }}</div>
   </div>
-  
+
+  <form *ngIf="user" #detailsForm="ngForm" class="card" (ngSubmit)="handleSave(detailsForm)" novalidate aria-labelledby="details-title">
+    <h2 id="details-title" class="card__title">Your details</h2>
+    <p class="card__subtitle">Used on your bookings and when we need to reach you.</p>
+
+    <div *ngIf="saveError" class="alert alert--danger details" role="alert">
+      <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+      <div class="alert__body">{{ saveError }}</div>
+    </div>
+
+    <div class="form-grid form-grid--2 details">
+      <div class="field">
+        <label class="field__label" for="acc-first">First name</label>
+        <input id="acc-first" class="input" name="firstName" autocomplete="given-name" required
+          [(ngModel)]="form.firstName" #firstName="ngModel"
+          [class.is-invalid]="firstName.invalid && (firstName.touched || detailsForm.submitted)"
+          [attr.aria-invalid]="firstName.invalid && (firstName.touched || detailsForm.submitted)" aria-describedby="acc-first-error" />
+        <span id="acc-first-error" class="field__error" *ngIf="firstName.invalid && (firstName.touched || detailsForm.submitted)">
+          <i class="fas fa-circle-exclamation" aria-hidden="true"></i> Enter your first name
+        </span>
+      </div>
+      <div class="field">
+        <label class="field__label" for="acc-last">Last name</label>
+        <input id="acc-last" class="input" name="lastName" autocomplete="family-name" required
+          [(ngModel)]="form.lastName" #lastName="ngModel"
+          [class.is-invalid]="lastName.invalid && (lastName.touched || detailsForm.submitted)"
+          [attr.aria-invalid]="lastName.invalid && (lastName.touched || detailsForm.submitted)" aria-describedby="acc-last-error" />
+        <span id="acc-last-error" class="field__error" *ngIf="lastName.invalid && (lastName.touched || detailsForm.submitted)">
+          <i class="fas fa-circle-exclamation" aria-hidden="true"></i> Enter your last name
+        </span>
+      </div>
+      <div class="field">
+        <label class="field__label" for="acc-phone">Phone number</label>
+        <input id="acc-phone" class="input num" type="tel" name="phoneNumber" autocomplete="tel" inputmode="tel" required
+          [(ngModel)]="form.phoneNumber" #phone="ngModel"
+          [class.is-invalid]="phone.invalid && (phone.touched || detailsForm.submitted)"
+          [attr.aria-invalid]="phone.invalid && (phone.touched || detailsForm.submitted)" aria-describedby="acc-phone-error" />
+        <span id="acc-phone-error" class="field__error" *ngIf="phone.invalid && (phone.touched || detailsForm.submitted)">
+          <i class="fas fa-circle-exclamation" aria-hidden="true"></i> Enter your phone number
+        </span>
+      </div>
+      <div class="field">
+        <label class="field__label" for="acc-email">Email</label>
+        <input id="acc-email" class="input" type="email" [value]="user.email" readonly aria-describedby="acc-email-hint" />
+        <span id="acc-email-hint" class="field__hint">This is how you log in, so it can't be changed here.</span>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn btn-ghost" (click)="resetForm()" [disabled]="!hasChanges || saving">Discard</button>
+      <button type="submit" class="btn btn-primary" [class.is-loading]="saving" [disabled]="!hasChanges || saving" [attr.aria-busy]="saving">
+        <span>Save changes</span>
+      </button>
+    </div>
+  </form>
+
+  <div *ngIf="loading" class="card stack-sm" aria-busy="true" aria-label="Loading your details">
+    <span class="skeleton skeleton--title"></span>
+    <span class="skeleton" style="height: 40px"></span>
+    <span class="skeleton" style="height: 40px"></span>
+  </div>
+
+  <section class="card danger-zone" aria-labelledby="danger-title">
+    <div class="danger-zone__text">
+      <h2 id="danger-title" class="card__title">Delete account</h2>
+      <p class="card__subtitle">Permanently remove your account and booking history.</p>
+    </div>
+    <button type="button" class="btn btn-danger-ghost" (click)="handleDeleteProfile()"
+      [class.is-loading]="deleting" [disabled]="deleting || !user">
+      <span>Delete account</span>
+    </button>
+  </section>
+</div>

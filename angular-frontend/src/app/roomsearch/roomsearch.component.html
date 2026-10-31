@@ -3,9 +3,9 @@
 <div class="container">
   <!-- Room Type Selection -->
   <div class="field">
-    <label>Room Type</label>
-    <select [(ngModel)]="roomType" (ngModelChange)="onRoomTypeChange()">
-      <option disabled value="">Select Room Type</option>
+    <label for="search-room-type">Room type</label>
+    <select id="search-room-type" class="select" [(ngModel)]="roomType" (ngModelChange)="onRoomTypeChange()">
+      <option disabled value="">Choose a room type</option>
       <option *ngFor="let type of roomTypes" [value]="type">
         {{ type }}
       </option>
@@ -14,10 +14,10 @@
 
   <!-- Calendar Toggle Button -->
   <div #calendarField class="field calendar-field" [class.calendar-open]="showCalendar">
-    <label>Select Dates</label>
-    <button type="button" class="calendar-toggle-btn" (click)="toggleCalendar()">
-      <i class="fas fa-calendar"></i> 
-      {{ showCalendar ? 'Hide Calendar' : 'Select Dates' }}
+    <label for="search-dates">Dates</label>
+    <button id="search-dates" type="button" class="calendar-toggle-btn" (click)="toggleCalendar()" [attr.aria-expanded]="showCalendar">
+      <i class="fas fa-calendar" aria-hidden="true"></i> 
+      {{ selectedDates.length ? selectedDates.length + (selectedDates.length === 1 ? ' date' : ' dates') + ' selected' : (showCalendar ? 'Hide calendar' : 'Choose dates') }}
     </button>
 
     <!-- Calendar Component -->
@@ -34,7 +34,7 @@
   </div>
 
   <!-- Search Button -->
-  <button (click)="handleSearch()">
-    <i class="fas fa-search"></i> Search Rooms
+  <button type="button" (click)="handleSearch()">
+    <i class="fas fa-search" aria-hidden="true"></i> Search
   </button>
 </div>

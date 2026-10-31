@@ -1,50 +1,101 @@
-<div class="profile">
-    <div *ngIf="user; else loading">
-      <h2>Welcome, {{ user.firstName }}</h2>
-      <div class="actions">
-        <button (click)="handleEditProfile()">Edit Profile</button>
-        <button class="logout" (click)="handleLogout()">Logout</button>
-      </div>
-  
-      <!-- Error Message -->
-      <p *ngIf="error" class="error">{{ error }}</p>
-  
-      <!-- Profile Details -->
-      <div class="details">
-        <h3>My Profile Details</h3>
-        <p><strong>Email:</strong> {{ user.email }}</p>
-        <p><strong>Phone Number:</strong> {{ user.phoneNumber }}</p>
-      </div>
-  
-      <!-- Bookings Section -->
-      <section>
-        <h3>My Booking History</h3>
-        <div *ngIf="bookings && bookings.length > 0; else noBookings">
-          <div *ngFor="let booking of bookings" class="item">
-            <p><strong>Booking Code:</strong> {{ booking?.bookingReference }}</p>
-            <p>
-              <strong>Check-in Date:</strong> {{ booking?.checkInDate | date }}
-            </p>
-            <p>
-              <strong>Check-out Date:</strong> {{ booking?.checkOutDate | date }}
-            </p>
-            <p><strong>Payment Status:</strong> {{ booking?.paymentStatus }}</p>
-            <p><strong>Booking Status:</strong> {{ booking?.bookingStatus }}</p>
-            <p><strong>Amount:</strong> {{ booking?.totalPrice | currency }}</p>
-            <p><strong>Room Number:</strong> {{ booking?.room?.roomNumber }}</p>
-            <p><strong>Room Type:</strong> {{ booking?.room?.type }}</p>
-            <img [src]="getImageUrl(booking?.room?.imageUrl)" alt="Room" />
-          </div>
-        </div>
-        <ng-template #noBookings>
-          <p>No bookings found.</p>
-        </ng-template>
-      </section>
+<div class="page">
+  <header class="page-header">
+    <div class="page-header__text">
+      <p class="page-header__eyebrow">My account</p>
+      <h1 *ngIf="!loading">{{ user ? 'Hello, ' + user.firstName : 'My account' }}</h1>
+      <span *ngIf="loading" class="skeleton skeleton--title" style="width: 240px; height: 32px"></span>
     </div>
-  
-    <!-- Loading Indicator -->
-    <ng-template #loading>
-      <p>Loading profile...</p>
-    </ng-template>
+    <div class="page-header__actions">
+      <a routerLink="/rooms" class="btn btn-primary">
+        <i class="fas fa-calendar-plus" aria-hidden="true"></i>
+        <span>Book a room</span>
+      </a>
+    </div>
+  </header>
+
+  <div *ngIf="error" class="alert alert--danger" role="alert">
+    <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+    <div class="alert__body">{{ error }}</div>
+    <button type="button" class="btn btn-secondary btn-sm alert__action" (click)="fetchUserProfile()">Try again</button>
   </div>
-  
+
+  <div *ngIf="!error" class="split">
+    <section class="bookings" aria-labelledby="bookings-title">
+      <h2 id="bookings-title" class="section-heading">My bookings</h2>
+
+      <div *ngIf="bookingsError" class="alert alert--danger" role="alert">
+        <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+        <div class="alert__body">{{ bookingsError }}</div>
+        <button type="button" class="btn btn-secondary btn-sm alert__action" (click)="fetchBookings()">Try again</button>
+      </div>
+
+      <ul *ngIf="loading || bookingsLoading" class="booking-list" aria-busy="true" aria-label="Loading bookings">
+        <li *ngFor="let row of skeletonRows" class="card booking">
+          <span class="skeleton booking__image"></span>
+          <div class="stack-sm booking__body">
+            <span class="skeleton skeleton--text" style="width: 40%"></span>
+            <span class="skeleton skeleton--text" style="width: 70%"></span>
+            <span class="skeleton skeleton--text" style="width: 30%"></span>
+          </div>
+        </li>
+      </ul>
+
+      <ng-container *ngIf="!loading && !bookingsLoading && !bookingsError">
+        <ul *ngIf="bookings.length > 0; else noBookings" class="booking-list">
+          <li *ngFor="let booking of bookings" class="card booking">
+            <div class="media-frame booking__image">
+              <img [src]="getImageUrl(booking?.room?.imageUrl)" [alt]="(booking?.room?.type || 'Room') + ' room'" loading="lazy" width="160" height="100" />
+            </div>
+            <div class="booking__body">
+              <div class="booking__top">
+                <h3 class="booking__title">{{ booking?.room?.type }} <span class="text-subtle">· Room <span class="num">{{ booking?.room?.roomNumber }}</span></span></h3>
+                <div class="booking__badges">
+                  <app-status-badge [status]="booking?.bookingStatus"></app-status-badge>
+                  <app-status-badge [status]="booking?.paymentStatus"></app-status-badge>
+                </div>
+              </div>
+              <p class="booking__dates num">
+                {{ booking?.checkInDate | date: 'EEE d MMM' }} → {{ booking?.checkOutDate | date: 'EEE d MMM y' }}
+              </p>
+              <div class="booking__bottom">
+                <span class="text-subtle booking__ref">Ref <span class="num">{{ booking?.bookingReference }}</span></span>
+                <strong class="num">{{ booking?.totalPrice | currency: 'INR' : 'symbol' : '1.0-2' }}</strong>
+              </div>
+              <div *ngIf="needsPayment(booking)" class="booking__action">
+                <a [routerLink]="['/payment', booking.bookingReference, booking.totalPrice]" class="btn btn-primary btn-sm">Complete payment</a>
+              </div>
+            </div>
+          </li>
+        </ul>
+        <ng-template #noBookings>
+          <div class="card empty-state">
+            <span class="empty-state__icon" aria-hidden="true"><i class="fas fa-suitcase"></i></span>
+            <h3>No bookings yet</h3>
+            <p>When you book a room, your stays will show up here.</p>
+            <a routerLink="/rooms" class="btn btn-primary">Browse rooms</a>
+          </div>
+        </ng-template>
+      </ng-container>
+    </section>
+
+    <aside class="card details" aria-labelledby="details-title">
+      <div class="card__header">
+        <h2 id="details-title" class="card__title">Contact details</h2>
+        <a routerLink="/edit-profile" class="btn btn-ghost btn-sm">Account settings</a>
+      </div>
+      <dl *ngIf="user" class="dl">
+        <dt>Name</dt>
+        <dd>{{ user.firstName }} {{ user.lastName }}</dd>
+        <dt>Email</dt>
+        <dd>{{ user.email }}</dd>
+        <dt>Phone</dt>
+        <dd class="num">{{ user.phoneNumber }}</dd>
+      </dl>
+      <div *ngIf="loading" class="stack-sm">
+        <span class="skeleton skeleton--text"></span>
+        <span class="skeleton skeleton--text"></span>
+        <span class="skeleton skeleton--text"></span>
+      </div>
+    </aside>
+  </div>
+</div>

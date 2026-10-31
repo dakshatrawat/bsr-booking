@@ -16,6 +16,7 @@ export class RoomresultComponent {
 
   @Input() roomSearchResults: any[] = []; // Input property for room results
   isAdmin: boolean;
+  failedImages = new Set<string>();
 
   constructor(private router: Router, private apiService: ApiService) {
     // Get the current user's admin status
@@ -37,10 +38,9 @@ export class RoomresultComponent {
     return this.apiService.getImageUrl(imagePath);
   }
 
-  // Handle image loading errors
-  onImageError(event: any): void {
-    console.error('Image failed to load:', event.target.src);
-    event.target.src = '/assets/placeholder-room.jpg'; // Fallback to placeholder
+  // Show a neutral placeholder instead of retrying a missing file
+  onImageError(roomId: string): void {
+    this.failedImages.add(roomId);
   }
 
 }

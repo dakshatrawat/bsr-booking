@@ -1,75 +1,136 @@
-<div class="container">
-    <h2>Update Booking</h2>
-  
-    <!-- Display success or error messages -->
-     <p *ngIf="message" class="success">{{message}}</p>
-     <p *ngIf="error" class="error">{{error}}</p>
-  
-    <!-- Display booking details if fetched -->
-    <div *ngIf="!isLoading">
-      <div class="details">
-        <h3>Booking Details</h3>
-        <p><strong>Confirmation Code:</strong> {{ bookingDetails.bookingReference }}</p>
-        <p><strong>Check-in Date:</strong> {{ bookingDetails.checkInDate }}</p>
-        <p><strong>Check-out Date:</strong> {{ bookingDetails.checkOutDate }}</p>
-        <p><strong>Total Price:</strong> {{ bookingDetails.totalPrice }}</p>
-        <p><strong>Payment Status:</strong> {{ bookingDetails.paymentStatus }}</p>
-        <p><strong>Booking Status:</strong> {{ bookingDetails.bookingStatus }}</p>
-  
-        <br />
-        <hr />
-        <br />
-        <h3>Who Made The Booking</h3>
-        <p><strong>First Name:</strong> {{ bookingDetails.user.firstName }}</p>
-        <p><strong>Last Name:</strong> {{ bookingDetails.user.lastName }}</p>
-        <p><strong>Email:</strong> {{ bookingDetails.user.email }}</p>
-        <p><strong>Phone Number:</strong> {{ bookingDetails.user.phoneNumber }}</p>
-  
-        <br />
-        <hr />
-        <br />
-        <h3>Room Details</h3>
-        <p><strong>Type:</strong> {{ bookingDetails.room.type }}</p>
-        <p><strong>Price per Night:</strong> {{ bookingDetails.room.pricePerNight | currency }}</p>
-        <p><strong>Capacity:</strong> {{ bookingDetails.room.capacity }}</p>
-        <p><strong>Description:</strong> {{ bookingDetails.room.description }}</p>
-        <img [src]="getImageUrl(bookingDetails.room.imageUrl)" alt="Room Image" height="200" />
+<div class="page">
+  <header class="page-header">
+    <div class="page-header__text">
+      <p class="page-header__eyebrow">
+        <a routerLink="/admin/manage-bookings"><i class="fas fa-arrow-left" aria-hidden="true"></i> Bookings</a>
+      </p>
+      <h1>Booking <span class="num">{{ bookingCode }}</span></h1>
+      <div *ngIf="bookingDetails" class="header-badges">
+        <app-status-badge [status]="bookingDetails.bookingStatus"></app-status-badge>
+        <app-status-badge [status]="bookingDetails.paymentStatus"></app-status-badge>
       </div>
-  
-      <hr />
-      
-      <!-- Booking Status Update Form -->
-      <h3>Update Status</h3>
-      <div class="form-group">
-        <label for="bookingStatus">Booking Status</label>
-        <select id="bookingStatus" name="bookingStatus" [(ngModel)]="formState.bookingStatus" (change)="handleChange($event)">
-          <option value="">Select</option>
-          <option value="BOOKED">BOOKED</option>
-          <option value="CANCELLED">CANCELLED</option>
-          <option value="CHECKED_IN">CHECKED IN</option>
-          <option value="CHECKED_OUT">CHECKED OUT</option>
-        </select>
-      </div>
-  
-      <div class="form-group">
-        <label for="paymentStatus">Payment Status</label>
-        <select id="paymentStatus" name="paymentStatus" [(ngModel)]="formState.paymentStatus" (change)="handleChange($event)">
-          <option value="">Select</option>
-          <option value="PENDING">PENDING</option>
-          <option value="COMPLETED">COMPLETED</option>
-          <option value="FAILED">FAILED</option>
-          <option value="REFUNDED">REFUNDED</option>
-          <option value="REVERSED">REVERSED</option>
-        </select>
-      </div>
-  
-      <!-- Update Button -->
-      <button (click)="handleUpdate()">Update Booking</button>
     </div>
-  
-    <!-- Loading state -->
-    <div *ngIf="isLoading">
-      <p>Loading booking details...</p>
+  </header>
+
+  <!-- Load failed: say why and how to recover, never spin forever -->
+  <div *ngIf="loadError" class="card">
+    <div class="empty-state">
+      <span class="empty-state__icon" aria-hidden="true"><i class="fas fa-circle-exclamation"></i></span>
+      <h2>Booking not available</h2>
+      <p>{{ loadError }}</p>
+      <div class="empty-actions">
+        <a routerLink="/admin/manage-bookings" class="btn btn-secondary">Back to bookings</a>
+        <button type="button" class="btn btn-primary" (click)="fetchBookingDetails()">Try again</button>
+      </div>
     </div>
   </div>
-  
+
+  <!-- Loading skeleton matches the final layout so nothing jumps -->
+  <div *ngIf="loading" class="split" aria-busy="true" aria-label="Loading booking">
+    <div class="stack">
+      <div class="card stack-sm">
+        <span class="skeleton skeleton--title"></span>
+        <span class="skeleton skeleton--text"></span>
+        <span class="skeleton skeleton--text" style="width: 80%"></span>
+        <span class="skeleton skeleton--text" style="width: 60%"></span>
+      </div>
+      <div class="card stack-sm">
+        <span class="skeleton skeleton--title"></span>
+        <span class="skeleton skeleton--text"></span>
+        <span class="skeleton skeleton--text" style="width: 70%"></span>
+      </div>
+    </div>
+    <div class="card stack-sm">
+      <span class="skeleton skeleton--title"></span>
+      <span class="skeleton" style="height: 40px"></span>
+      <span class="skeleton" style="height: 40px"></span>
+    </div>
+  </div>
+
+  <div *ngIf="!loading && bookingDetails" class="split">
+    <div>
+      <section class="card" aria-labelledby="stay-title">
+        <h2 id="stay-title" class="card__title section-title">Stay</h2>
+        <dl class="dl">
+          <dt>Check-in</dt>
+          <dd class="num">{{ bookingDetails.checkInDate | date: 'EEE d MMM y' }}</dd>
+          <dt>Check-out</dt>
+          <dd class="num">{{ bookingDetails.checkOutDate | date: 'EEE d MMM y' }}</dd>
+          <dt>Nights</dt>
+          <dd class="num">{{ nights }}</dd>
+          <dt>Total</dt>
+          <dd class="num total">{{ bookingDetails.totalPrice | currency: 'INR' : 'symbol' : '1.0-2' }}</dd>
+        </dl>
+      </section>
+
+      <section class="card" aria-labelledby="guest-title">
+        <h2 id="guest-title" class="card__title section-title">Guest</h2>
+        <dl class="dl">
+          <dt>Name</dt>
+          <dd>{{ bookingDetails.user.firstName }} {{ bookingDetails.user.lastName }}</dd>
+          <dt>Email</dt>
+          <dd><a [href]="'mailto:' + bookingDetails.user.email">{{ bookingDetails.user.email }}</a></dd>
+          <dt>Phone</dt>
+          <dd><a [href]="'tel:' + bookingDetails.user.phoneNumber" class="num">{{ bookingDetails.user.phoneNumber }}</a></dd>
+        </dl>
+      </section>
+
+      <section class="card" aria-labelledby="room-title">
+        <h2 id="room-title" class="card__title section-title">Room</h2>
+        <div class="room">
+          <div class="media-frame room__image">
+            <img [src]="getImageUrl(bookingDetails.room.imageUrl)" [alt]="bookingDetails.room.type + ' room'" loading="lazy" width="320" height="200" />
+          </div>
+          <dl class="dl">
+            <dt>Type</dt>
+            <dd>{{ bookingDetails.room.type }}</dd>
+            <dt>Room number</dt>
+            <dd class="num">{{ bookingDetails.room.roomNumber }}</dd>
+            <dt>Capacity</dt>
+            <dd class="num">{{ bookingDetails.room.capacity }} {{ bookingDetails.room.capacity === 1 ? 'guest' : 'guests' }}</dd>
+            <dt>Price per night</dt>
+            <dd class="num">{{ bookingDetails.room.pricePerNight | currency: 'INR' : 'symbol' : '1.0-2' }}</dd>
+          </dl>
+        </div>
+        <p *ngIf="bookingDetails.room.description" class="room__description">{{ bookingDetails.room.description }}</p>
+      </section>
+    </div>
+
+    <form class="card status-card" (ngSubmit)="handleUpdate()" aria-labelledby="status-title">
+      <h2 id="status-title" class="card__title">Update status</h2>
+      <p class="card__subtitle">Changes are saved when you select Save changes.</p>
+
+      <div class="stack status-fields">
+        <div class="field">
+          <label class="field__label" for="bookingStatus">Booking status</label>
+          <select id="bookingStatus" name="bookingStatus" class="select" [(ngModel)]="formState.bookingStatus">
+            <option *ngFor="let status of bookingStatuses" [value]="status">{{ label(status) }}</option>
+          </select>
+          <span class="field__hint" *ngIf="formState.bookingStatus === 'CANCELLED' && bookingDetails.bookingStatus !== 'CANCELLED'">
+            The room will be released for these dates.
+          </span>
+        </div>
+
+        <div class="field">
+          <label class="field__label" for="paymentStatus">Payment status</label>
+          <select id="paymentStatus" name="paymentStatus" class="select" [(ngModel)]="formState.paymentStatus">
+            <option *ngFor="let status of paymentStatuses" [value]="status">{{ label(status) }}</option>
+          </select>
+          <span class="field__hint">Records the status only. Refunds are issued in Razorpay.</span>
+        </div>
+      </div>
+
+      <div *ngIf="error" class="alert alert--danger save-error" role="alert">
+        <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+        <div class="alert__body">{{ error }}</div>
+      </div>
+
+      <div class="form-actions form-actions--sticky">
+        <button type="button" class="btn btn-ghost" (click)="resetForm()" [disabled]="!hasChanges || saving">Discard</button>
+        <button type="submit" class="btn btn-primary" [class.is-loading]="saving" [disabled]="!hasChanges || saving" [attr.aria-busy]="saving">
+          <span>Save changes</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

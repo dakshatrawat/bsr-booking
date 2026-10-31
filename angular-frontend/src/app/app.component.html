@@ -1,5 +1,9 @@
+<a class="skip-link" href="#main" (click)="skipToMain($event)">Skip to main content</a>
 <app-navbar/>
-<app-back-button/>
-<router-outlet/>
+<main id="main" #main tabindex="-1">
+  <router-outlet/>
+</main>
 <app-footer/>
 <app-chatbot/>
+<app-toast-outlet/>
+<app-confirm-dialog/>

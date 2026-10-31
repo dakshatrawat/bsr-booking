@@ -1,242 +1,142 @@
-/* Skyscanner-Style About Page */
+/* Original about layout (banner, intro card, feature row, centred CTA) on design-system tokens */
 
-.about-container {
-  min-height: calc(100vh - 200px);
-  background: var(--pure-white);
-  margin-top: 0; /* Removed - handled by global layout */
-  padding: var(--section-padding);
-  width: 100%;
-  box-sizing: border-box;
-}
-
-/* Mobile: Add top margin */
-@media (max-width: 768px) {
-  .about-container {
-    margin-top: var(--mobile-page-top-margin);
-  }
-}
-
-.hero-section {
-  background: linear-gradient(135deg, rgba(0, 113, 206, 0.5) 0%, rgba(0, 81, 163, 0.4) 100%),
-              url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80') center/cover;
-  background-attachment: scroll;
-  color: var(--pure-white);
+.about-hero {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 240px;
+  overflow: hidden;
   text-align: center;
-  padding: var(--spacing-xl) var(--container-padding);
-  position: relative;
+  isolation: isolate;
 }
 
-.hero-section::before {
-  content: '';
+.about-hero__media {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(0, 113, 206, 0.3) 0%, rgba(0, 81, 163, 0.25) 100%);
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(180deg, rgba(10, 20, 35, 0.45) 0%, rgba(10, 20, 35, 0.6) 100%),
+    url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=2000&q=75') center / cover;
 }
 
-.hero-section h1 {
-  font-size: var(--font-size-xl);
-  font-weight: 700;
-  margin-bottom: var(--spacing-sm);
-  color: var(--pure-white);
-  position: relative;
-  z-index: var(--z-base);
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+.about-hero__content { padding-block: var(--space-7); }
+
+/* Text over the photo stays white in both themes */
+.about-hero h1 {
+  font-size: var(--text-2xl);
+  color: #FFFFFF;
+  text-wrap: balance;
 }
 
-.hero-section .subtitle {
-  font-size: var(--font-size-md);
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.95);
-  position: relative;
-  z-index: var(--z-base);
+.about-hero__subtitle {
+  max-width: none;
+  margin-top: var(--space-2);
+  font-size: var(--text-md);
+  color: rgba(255, 255, 255, 0.9);
 }
 
-.content-section {
-  width: 100%;
-  max-width: 100%;
-  margin: 0 auto;
-  padding: var(--spacing-lg) var(--container-padding);
-  box-sizing: border-box;
+@media (max-width: 479px) {
+  .about-hero { min-height: 200px; }
+  .about-hero h1 { font-size: var(--text-xl); }
+  .about-hero__subtitle { font-size: var(--text-sm); }
 }
 
-.about-content {
-  margin-bottom: 40px;
+.about {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
 }
 
-.text-content {
-  background: var(--pure-white);
-  padding: var(--spacing-lg);
-  border-radius: var(--border-radius);
-  border: 1px solid var(--border-color);
-  margin-bottom: var(--spacing-lg);
-  box-sizing: border-box;
-}
+.about__intro { padding: var(--space-6); }
 
-.text-content h2 {
-  font-size: var(--font-size-xl);
-  color: var(--text-primary);
-  margin-bottom: var(--spacing-md);
-  font-weight: 600;
+.about__intro h2 {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  font-size: var(--text-lg);
 }
 
-.text-content h2 i {
-  color: var(--skyscanner-blue);
-}
-
-.text-content p {
-  font-size: var(--font-size-base);
-  line-height: 1.6;
-  color: var(--text-secondary);
-  margin-bottom: var(--spacing-md);
-}
-
-.features-grid {
+.about__intro-icon {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--spacing-md);
-  margin-top: var(--spacing-lg);
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--color-accent-subtle);
+  color: var(--color-accent);
+  font-size: var(--text-md);
 }
 
-.feature-card {
-  background: var(--pure-white);
-  padding: var(--spacing-lg);
-  border-radius: var(--border-radius);
-  border: 1px solid var(--border-color);
+.about__intro p {
+  max-width: 75ch;
+  color: var(--color-text-muted);
+}
+
+.about__intro p + p { margin-top: var(--space-3); }
+
+.about__features {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 560px) {
+  .about__features { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (min-width: 1024px) {
+  .about__features { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+.about__features > li { display: flex; }
+
+.feature {
+  flex: 1;
+  padding: var(--space-5);
   text-align: center;
-  transition: all 0.2s ease;
-  box-sizing: border-box;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  transition: border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out);
 }
 
-.feature-card:hover {
+.feature:hover {
+  border-color: var(--color-border-strong);
   box-shadow: var(--shadow-md);
-  border-color: var(--border-dark);
 }
 
-.feature-icon {
+.feature__icon {
+  display: grid;
+  place-items: center;
   width: 48px;
   height: 48px;
-  margin: 0 auto var(--spacing-md);
-  background: var(--skyscanner-blue-light);
+  margin: 0 auto var(--space-4);
   border-radius: 50%;
+  background: var(--color-accent-subtle);
+  color: var(--color-accent);
+  font-size: var(--text-lg);
+}
+
+.feature h3 { margin-bottom: var(--space-2); font-size: var(--text-md); }
+.feature p { margin-inline: auto; font-size: var(--text-sm); }
+
+.about__cta {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-}
-
-.feature-icon i {
-  font-size: 1.5rem;
-  color: var(--skyscanner-blue);
-}
-
-.feature-card h3 {
-  font-size: var(--font-size-lg);
-  color: var(--text-primary);
-  margin-bottom: var(--spacing-xs);
-  font-weight: 600;
-}
-
-.feature-card p {
-  color: var(--text-secondary);
-  line-height: 1.6;
-  font-size: var(--font-size-base);
-}
-
-.cta-section {
-  background: var(--gray-50);
-  padding: var(--spacing-xl) var(--spacing-lg);
-  border-radius: var(--border-radius);
+  gap: var(--space-2);
+  padding: var(--space-7) var(--space-5);
   text-align: center;
-  border: 1px solid var(--border-color);
-  box-sizing: border-box;
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
 }
 
-.cta-section h2 {
-  font-size: var(--font-size-xl);
-  margin-bottom: var(--spacing-sm);
-  color: var(--text-primary);
-}
-
-.cta-section p {
-  font-size: var(--font-size-base);
-  margin-bottom: var(--spacing-lg);
-  color: var(--text-secondary);
-}
-
-.cta-button {
-  display: inline-block;
-  padding: 12px 16px;
-  min-height: var(--button-height);
-  background-color: var(--skyscanner-blue);
-  color: var(--pure-white);
-  border-radius: var(--border-radius);
-  font-weight: 600;
-  font-size: var(--font-size-base);
-  text-decoration: none;
-  transition: all 0.2s ease;
-  box-sizing: border-box;
-}
-
-.cta-button:hover {
-  background-color: var(--skyscanner-blue-dark);
-}
-
-/* Desktop Adaptations */
-@media (min-width: 769px) {
-  .about-container {
-    padding: 40px 0;
-  }
-
-  .hero-section {
-    padding: 60px var(--spacing-md);
-    background-attachment: fixed;
-  }
-
-  .hero-section h1 {
-    font-size: 36px;
-  }
-
-  .hero-section .subtitle {
-    font-size: 18px;
-  }
-
-  .content-section {
-    max-width: 1200px;
-    padding: 40px var(--spacing-md);
-  }
-
-  .text-content {
-    padding: var(--spacing-xl);
-    margin-bottom: var(--spacing-xl);
-  }
-
-  .text-content h2 {
-    font-size: var(--font-size-xxl);
-  }
-
-  .features-grid {
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: var(--spacing-lg);
-  }
-
-  .feature-card {
-    padding: var(--spacing-lg);
-  }
-
-  .cta-section {
-    padding: 40px var(--spacing-xl);
-  }
-
-  .cta-section h2 {
-    font-size: var(--font-size-xxl);
-  }
-
-  .cta-button {
-    padding: 12px 24px;
-  }
-}
+.about__cta h2 { font-size: var(--text-lg); }
+.about__cta p { color: var(--color-text-muted); }
+.about__cta .btn { margin-top: var(--space-3); }

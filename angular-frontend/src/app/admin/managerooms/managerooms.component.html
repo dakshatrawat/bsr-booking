@@ -1,29 +1,113 @@
-<div class="all-rooms">
-  
-    <div *ngIf="error" class="error">{{ error }}</div>
-      <h2>All Rooms</h2>
-    
-      <!-- Filter and Add Room Section -->
-      <div class="filter-div">
-        <div class="filter-child">
-          <label>Filter by Room Type:</label>
-          <select [(ngModel)]="selectedRoomType" (change)="handleRoomTypeChange($event)">
-            <option value="">All</option>
-            <option *ngFor="let type of roomTypes" [value]="type">{{ type }}</option>
-          </select>
-        </div>
-        <button (click)="navigateToAddRoom()">Add Room</button>
-      </div>
-    
-      <!-- Room Result Component -->
-      <app-roomresult [roomSearchResults]="currentRooms"></app-roomresult>
-    
-      <!-- Pagination Component -->
-      <app-pagination
-        [roomPerPage]="roomsPerPage"
-        [totalRooms]="filteredRooms.length"
-        [currentPage]="currentPage"
-        (paginate)="paginate($event)"
-      ></app-pagination>
+<div class="page">
+  <header class="page-header">
+    <div class="page-header__text">
+      <p class="page-header__eyebrow"><a routerLink="/admin">Admin</a></p>
+      <h1>Rooms</h1>
+      <p class="page-header__description">Prices, capacity and photos for every room guests can book.</p>
     </div>
-    
+    <div class="page-header__actions">
+      <a routerLink="/admin/add-room" class="btn btn-primary">
+        <i class="fas fa-plus" aria-hidden="true"></i>
+        <span>Add room</span>
+      </a>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <div class="field">
+      <label class="field__label" for="room-type-filter">Room type</label>
+      <select id="room-type-filter" class="select" [(ngModel)]="selectedRoomType" (ngModelChange)="filterRooms($event)">
+        <option value="">All types</option>
+        <option *ngFor="let type of roomTypes" [value]="type">{{ type }}</option>
+      </select>
+    </div>
+    <p class="toolbar__meta" aria-live="polite">
+      <ng-container *ngIf="!loading && !error">
+        <span class="num">{{ filteredRooms.length }}</span> {{ filteredRooms.length === 1 ? 'room' : 'rooms' }}
+      </ng-container>
+    </p>
+  </div>
+
+  <div *ngIf="error" class="alert alert--danger" role="alert">
+    <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
+    <div class="alert__body">
+      <strong class="alert__title">Rooms didn't load</strong>
+      {{ error }}
+    </div>
+    <button type="button" class="btn btn-secondary btn-sm alert__action" (click)="fetchRooms()">Try again</button>
+  </div>
+
+  <div *ngIf="!error" class="table-wrap" [attr.aria-busy]="loading">
+    <table class="data-table">
+      <caption class="sr-only">Rooms, sortable by column</caption>
+      <thead>
+        <tr>
+          <th scope="col" class="col-sticky" [attr.aria-sort]="sort.ariaSort('roomNumber')">
+            <button type="button" class="sort-btn" (click)="toggleSort('roomNumber')">Room <i class="fas" [ngClass]="sort.icon('roomNumber')" aria-hidden="true"></i></button>
+          </th>
+          <th scope="col" [attr.aria-sort]="sort.ariaSort('type')">
+            <button type="button" class="sort-btn" (click)="toggleSort('type')">Type <i class="fas" [ngClass]="sort.icon('type')" aria-hidden="true"></i></button>
+          </th>
+          <th scope="col">Description</th>
+          <th scope="col" class="num" [attr.aria-sort]="sort.ariaSort('capacity')">
+            <button type="button" class="sort-btn" (click)="toggleSort('capacity')">Guests <i class="fas" [ngClass]="sort.icon('capacity')" aria-hidden="true"></i></button>
+          </th>
+          <th scope="col" class="num" [attr.aria-sort]="sort.ariaSort('pricePerNight')">
+            <button type="button" class="sort-btn" (click)="toggleSort('pricePerNight')">Price / night <i class="fas" [ngClass]="sort.icon('pricePerNight')" aria-hidden="true"></i></button>
+          </th>
+          <th scope="col" class="col-actions"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+
+      <tbody *ngIf="loading">
+        <tr *ngFor="let row of skeletonRows">
+          <td class="col-sticky"><span class="room-cell"><span class="skeleton thumb"></span><span class="skeleton skeleton--text" style="width: 40px"></span></span></td>
+          <td><span class="skeleton skeleton--text" style="width: 96px"></span></td>
+          <td><span class="skeleton skeleton--text" style="width: 220px"></span></td>
+          <td class="num"><span class="skeleton skeleton--text" style="width: 24px; margin-left: auto"></span></td>
+          <td class="num"><span class="skeleton skeleton--text" style="width: 72px; margin-left: auto"></span></td>
+          <td></td>
+        </tr>
+      </tbody>
+
+      <tbody *ngIf="!loading">
+        <tr *ngFor="let room of currentRooms">
+          <th scope="row" class="col-sticky cell-primary">
+            <span class="room-cell">
+              <img class="thumb" [src]="getImageUrl(room.imageUrl)" alt="" width="56" height="40" loading="lazy" (error)="onImageError($event)" />
+              <span class="num">{{ room.roomNumber }}</span>
+            </span>
+          </th>
+          <td>{{ room.type }}</td>
+          <td class="cell-wrap cell-muted"><span class="clamp-2" [title]="room.description || ''">{{ room.description || '—' }}</span></td>
+          <td class="num">{{ room.capacity }}</td>
+          <td class="num cell-primary">{{ room.pricePerNight | currency: 'INR' : 'symbol' : '1.0-2' }}</td>
+          <td class="col-actions">
+            <a [routerLink]="['/admin/edit-room', room.id]" class="btn btn-secondary btn-sm" [attr.aria-label]="'Edit room ' + room.roomNumber">Edit</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div *ngIf="!loading && rooms.length === 0" class="empty-state">
+      <span class="empty-state__icon" aria-hidden="true"><i class="fas fa-bed"></i></span>
+      <h2>No rooms yet</h2>
+      <p>Add your first room so guests can start booking.</p>
+      <a routerLink="/admin/add-room" class="btn btn-primary"><i class="fas fa-plus" aria-hidden="true"></i><span>Add room</span></a>
+    </div>
+    <div *ngIf="!loading && rooms.length > 0 && filteredRooms.length === 0" class="empty-state">
+      <span class="empty-state__icon" aria-hidden="true"><i class="fas fa-filter-circle-xmark"></i></span>
+      <h2>No {{ selectedRoomType }} rooms</h2>
+      <p>Try another room type, or show all rooms.</p>
+      <button type="button" class="btn btn-secondary" (click)="selectedRoomType = ''; filterRooms('')">Show all rooms</button>
+    </div>
+  </div>
+
+  <app-pagination
+    *ngIf="!loading && !error"
+    [roomPerPage]="roomsPerPage"
+    [totalRooms]="filteredRooms.length"
+    [currentPage]="currentPage"
+    (paginate)="paginate($event)"
+  ></app-pagination>
+</div>

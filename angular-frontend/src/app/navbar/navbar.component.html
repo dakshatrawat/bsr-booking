@@ -1,57 +1,53 @@
-<nav class="navbar">
+<header class="navbar" [class.is-scrolled]="isScrolled">
   <div class="nav-container">
-    <div class="brand">
-      <a routerLink="/home" class="brand-link" (click)="onNavClick()">
-        <i class="fas fa-mountain"></i>
-        <span class="brand-name">Bhagat Singh Resort</span>
-      </a>
-    </div>
-    
-    <!-- Hamburger Menu Button (Mobile Only) -->
-    <button class="hamburger-menu" (click)="toggleMenu()" aria-label="Toggle menu" type="button">
-      <i class="fas fa-bars" *ngIf="!isMenuOpen"></i>
-      <i class="fas fa-times" *ngIf="isMenuOpen"></i>
-    </button>
-    
-    <!-- Navigation Menu -->
-    <ul class="nav-menu" [class.menu-open]="isMenuOpen" #navMenu>
-      <li><a routerLink="/home" routerLinkActive="active" (click)="onNavClick()">
-        <i class="fas fa-home"></i>
-        <span>Home</span>
-      </a></li>
-      <li><a routerLink="/rooms" routerLinkActive="active" (click)="onNavClick()">
-        <i class="fas fa-bed"></i>
-        <span>Rooms</span>
-      </a></li>
-      <li><a routerLink="/find-booking" routerLinkActive="active" (click)="onNavClick()">
-        <i class="fas fa-search"></i>
-        <span>Find Booking</span>
-      </a></li>
-      <li><a routerLink="/about" routerLinkActive="active" (click)="onNavClick()">
-        <i class="fas fa-info-circle"></i>
-        <span>About</span>
-      </a></li>
+    <a routerLink="/home" class="brand" (click)="closeMenu()" aria-label="Bhagat Singh Resort, home">
+      <span class="brand-mark" aria-hidden="true"><i class="fas fa-mountain"></i></span>
+      <span class="brand-name">Bhagat Singh Resort</span>
+    </a>
 
-      <li *ngIf="isCustomer"><a routerLink="/profile" routerLinkActive="active" (click)="onNavClick()">
-        <i class="fas fa-user"></i>
-        <span>Profile</span>
-      </a></li>
-      <li *ngIf="isAdmin"><a routerLink="/admin" routerLinkActive="active" (click)="onNavClick()">
-        <i class="fas fa-cog"></i>
-        <span>Admin</span>
-      </a></li>
-      <li *ngIf="!isAuthemticated"><a routerLink="/login" routerLinkActive="active" class="btn-login" (click)="onNavClick()">
-        <i class="fas fa-sign-in-alt"></i>
-        <span>Login</span>
-      </a></li>
-      <li *ngIf="!isAuthemticated"><a routerLink="/register" routerLinkActive="active" class="btn-register" (click)="onNavClick()">
-        <i class="fas fa-user-plus"></i>
-        <span>Register</span>
-      </a></li>
-      <li *ngIf="isAuthemticated" class="logout-btn" (click)="handleLogout()">
-        <i class="fas fa-sign-out-alt"></i>
-        <span>Logout</span>
-      </li>
-    </ul>
+    <button
+      type="button"
+      class="theme-toggle"
+      (click)="themeService.toggle()"
+      [attr.aria-label]="themeService.theme() === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'"
+      [title]="themeService.theme() === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'"
+    >
+      <i class="fas" [class.fa-sun]="themeService.theme() === 'dark'" [class.fa-moon]="themeService.theme() !== 'dark'" aria-hidden="true"></i>
+    </button>
+
+    <button
+      class="menu-toggle"
+      type="button"
+      (click)="toggleMenu()"
+      [attr.aria-expanded]="isMenuOpen"
+      aria-controls="primary-nav"
+      [attr.aria-label]="isMenuOpen ? 'Close menu' : 'Open menu'"
+    >
+      <i class="fas" [class.fa-bars]="!isMenuOpen" [class.fa-xmark]="isMenuOpen" aria-hidden="true"></i>
+    </button>
+
+    <nav id="primary-nav" class="nav-panel" [class.is-open]="isMenuOpen" aria-label="Primary">
+      <ul class="nav-links">
+        <li><a routerLink="/home" routerLinkActive="is-active" ariaCurrentWhenActive="page" (click)="closeMenu()">Home</a></li>
+        <li><a routerLink="/rooms" routerLinkActive="is-active" ariaCurrentWhenActive="page" (click)="closeMenu()">Rooms</a></li>
+        <li><a routerLink="/find-booking" routerLinkActive="is-active" ariaCurrentWhenActive="page" (click)="closeMenu()">Find a booking</a></li>
+        <li><a routerLink="/about" routerLinkActive="is-active" ariaCurrentWhenActive="page" (click)="closeMenu()">About</a></li>
+        <li *ngIf="isAdmin"><a routerLink="/admin" routerLinkActive="is-active" ariaCurrentWhenActive="page" (click)="closeMenu()">Admin</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <ng-container *ngIf="!isAuthemticated">
+          <a routerLink="/login" class="btn btn-ghost" (click)="closeMenu()">Log in</a>
+          <a routerLink="/register" class="btn btn-primary" (click)="closeMenu()">Create account</a>
+        </ng-container>
+        <ng-container *ngIf="isAuthemticated">
+          <a *ngIf="isCustomer" routerLink="/profile" routerLinkActive="is-active" ariaCurrentWhenActive="page" class="btn btn-ghost" (click)="closeMenu()">
+            <i class="fas fa-circle-user" aria-hidden="true"></i>
+            <span>My account</span>
+          </a>
+          <button type="button" class="btn btn-secondary" (click)="handleLogout()">Log out</button>
+        </ng-container>
+      </div>
+    </nav>
   </div>
-</nav>
+</header>
