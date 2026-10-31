@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ["jdk"]
+nixPkgs = ["jdk25"]
 
 [phases.install]
 cmds = ["chmod +x ./mvnw", "./mvnw clean package -DskipTests"]

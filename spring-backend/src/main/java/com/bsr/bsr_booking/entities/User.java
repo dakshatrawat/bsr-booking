@@ -39,6 +39,7 @@ public class User {
     private UserRole role; //e.g CUSTOMER, ADMIN
 
     private Boolean isActive;
-    private final LocalDateTime createdAt = LocalDateTime.now();
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
 
 }

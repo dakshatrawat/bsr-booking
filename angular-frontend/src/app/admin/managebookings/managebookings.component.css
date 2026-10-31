@@ -8,6 +8,8 @@
   background: var(--pure-white);
   border-radius: var(--border-radius);
   box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+  box-sizing: border-box;
 }
 
 /* Mobile: Add top margin */
@@ -15,9 +17,6 @@
   .container {
     margin-top: var(--mobile-page-top-margin);
   }
-}
-  border: 1px solid var(--border-color);
-  box-sizing: border-box;
 }
 
 h2 {

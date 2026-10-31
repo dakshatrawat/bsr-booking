@@ -14,7 +14,6 @@ import com.bsr.bsr_booking.repositories.BookingRepository;
 import com.bsr.bsr_booking.repositories.RoomRepository;
 import com.bsr.bsr_booking.services.BookingCodeGenerator;
 import com.bsr.bsr_booking.services.BookingService;
-import com.bsr.bsr_booking.services.NotificationService;
 import com.bsr.bsr_booking.services.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,7 +36,6 @@ public class BookingServiceImpl implements BookingService {
 
     private final BookingRepository bookingRepository;
     private final RoomRepository roomRepository;
-    private final NotificationService notificationService;
     private final ModelMapper modelMapper;
     private final UserService userService;
     private final BookingCodeGenerator bookingCodeGenerator;

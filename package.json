@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Hotel booking system - Root package for Vercel deployment",
   "scripts": {
+    "dev": "node scripts/dev.js",
     "build": "cd angular-frontend && npm install && npm run build:prod"
   },
   "private": true,

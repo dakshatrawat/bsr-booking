@@ -8,6 +8,7 @@
   background-color: var(--pure-white);
   border-radius: 4px;
   box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
 }
 
 /* Mobile: Add top margin */
@@ -15,8 +16,6 @@
   .profile {
     margin-top: var(--mobile-page-top-margin);
   }
-}
-  border: 1px solid var(--border-color);
 }
 
 h2 {

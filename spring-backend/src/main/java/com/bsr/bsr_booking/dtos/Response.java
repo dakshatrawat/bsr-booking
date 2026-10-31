@@ -55,5 +55,6 @@ public class Response {
     //Booked dates output
     private List<String> bookedDates;
 
-    private final LocalDateTime timestamp = LocalDateTime.now();
+    @Builder.Default
+    private LocalDateTime timestamp = LocalDateTime.now();
 }

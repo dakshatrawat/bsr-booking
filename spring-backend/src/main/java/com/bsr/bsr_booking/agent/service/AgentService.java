@@ -9,6 +9,8 @@ import com.bsr.bsr_booking.dtos.BookingDTO;
 import com.bsr.bsr_booking.dtos.Response;
 import com.bsr.bsr_booking.dtos.UserDTO;
 import com.bsr.bsr_booking.enums.RoomType;
+import com.bsr.bsr_booking.exceptions.InvalidBookingStateAndDateException;
+import com.bsr.bsr_booking.exceptions.NotFoundException;
 import com.bsr.bsr_booking.services.BookingService;
 import com.bsr.bsr_booking.services.RoomService;
 import com.bsr.bsr_booking.services.UserService;
@@ -16,19 +18,24 @@ import com.bsr.bsr_booking.repositories.RoomRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -49,27 +56,33 @@ public class AgentService {
     @Value("${frontend.payment.url:https://your-frontend-domain/payment}")
     private String frontendPaymentUrl;
 
-    // Session-scoped conversation memory (in-memory; replace with distributed store if needed)
-    private final Map<String, ConversationContext> sessionStore = new ConcurrentHashMap<>();
+    // Session-scoped conversation memory (in-memory; replace with distributed store if needed).
+    // Keys are scoped per authenticated user (or per client-supplied session id when anonymous)
+    // and entries expire after SESSION_TTL_MS.
+    private static final Map<String, SessionEntry> sessionStore = new ConcurrentHashMap<>();
+    private static final long SESSION_TTL_MS = 30 * 60 * 1000L;
+    private static final int MAX_SESSIONS = 5000;
+
+    private record SessionEntry(ConversationContext ctx, long touchedAt) {}
 
     private static final String PROMPT_TEMPLATE = """
             You are an AI booking assistant for Bhagat Singh Resort (hotel/resort). Purpose: hotel room discovery, availability checking, and booking. You must infer intent from casual language and perform slot-filling (intent, roomNumber, checkInDate, checkOutDate). Keep context from prior turns; do NOT re-ask for slots already provided. Return ONLY one JSON.
-            
+
             Allowed actions + params:
-            - update_own_account: {firstName?, lastName?, email?, phoneNumber?, password?}
+            - update_own_account: {firstName?, lastName?, email?, phoneNumber?}
             - get_my_bookings: {}
             - available_rooms: {checkInDate (YYYY-MM-DD), checkOutDate (YYYY-MM-DD), roomType? in [SINGLE, DOUBLE, SUIT, TRIPLE]}
             - get_room_by_id: {id (number)}
             - create_booking: {roomId (number), checkInDate (YYYY-MM-DD), checkOutDate (YYYY-MM-DD)}
-            Disallowed: deleteOwnAccount, addRoom, any admin-only op.
-            
+            Disallowed: deleteOwnAccount, addRoom, password changes, any admin-only op.
+
             Business / domain:
             - Hotel name: Bhagat Singh Resort
             - Type: Hotel / Resort
             - Contact: available on website (phone/email)
             - Owner/Management: Resort staff (not AI)
             - Scope: Booking assistance, availability, hotel questions; not a general chatbot.
-            
+
             Guidelines:
             - Understand generic asks like "rooms", "show rooms", "available rooms" without requiring perfect sentences.
             - Reuse dates/room intent already mentioned in conversation; do NOT ask again if known.
@@ -79,40 +92,51 @@ public class AgentService {
             - Avoid repetitive wording; be concise and specific.
             - If action not allowed, set action "small_talk" with a brief refusal.
             - If unclear, use "small_talk" with a short, specific clarifying question.
-            
+
             Respond with exactly:
             {"action":"<allowed_or_small_talk>","params":{...},"response":"<short user-facing reply>"}
-            
+
             Conversation so far:
             %s
             Latest user message: "%s"
             """;
 
     public AgentChatResponse handleChat(AgentChatRequest request) {
-        String sessionId = StringUtils.hasText(request.getSessionId()) ? request.getSessionId() : "default";
-        ConversationContext prior = sessionStore.getOrDefault(sessionId, new ConversationContext());
-        ConversationContext ctx = mergeContext(prior, deriveContext(request.getMessages()));
-        String prompt = buildPrompt(request.getMessages(), ctx);
-        String modelOutput;
-
-        // First try lightweight intent + context parsing to reduce LLM calls
-        AgentDecision quick = fallbackDecision(request);
-        if (quick != null) {
-            AgentChatResponse resp = executeDecision(quick, "fallback", ctx);
-            sessionStore.put(sessionId, mergeState(ctx, quick));
-            return resp;
+        List<AgentChatMessage> messages = request == null || request.getMessages() == null
+                ? List.of()
+                : request.getMessages().stream().filter(Objects::nonNull).toList();
+        if (request == null || messages.isEmpty()) {
+            return AgentChatResponse.builder()
+                    .reply("Hi! Tell me if you want available rooms, to book, or to view your bookings.")
+                    .action(AgentAction.SMALL_TALK)
+                    .build();
         }
 
+        String key = sessionKey(request.getSessionId());
+        ConversationContext prior = loadSession(key);
+        ConversationContext ctx = mergeContext(prior, deriveContext(messages));
+        String content = messages.get(messages.size() - 1).getContent();
+
+        // Lightweight intent + context parsing first to reduce LLM calls
+        AgentDecision quick;
+        boolean confirmed = false;
+        if (prior.pendingBooking != null && isConfirmation(content)) {
+            quick = new AgentDecision();
+            quick.setAction("create_booking");
+            quick.setParams(new HashMap<>(prior.pendingBooking));
+            confirmed = true;
+        } else {
+            quick = fallbackDecision(content, ctx);
+        }
+        if (quick != null) {
+            return runDecision(quick, ctx, key, confirmed);
+        }
+
+        String modelOutput;
         try {
-            modelOutput = geminiClient.generateText(prompt);
+            modelOutput = geminiClient.generateText(buildPrompt(messages, ctx));
         } catch (Exception e) {
             log.error("Gemini call failed", e);
-            AgentDecision fallback = fallbackDecision(request);
-            if (fallback != null) {
-                AgentChatResponse resp = executeDecision(fallback, "fallback", ctx);
-                sessionStore.put(sessionId, mergeState(ctx, fallback));
-                return resp;
-            }
             return AgentChatResponse.builder()
                     .reply("I couldn't reach the assistant just now. Please try again in a few seconds.")
                     .action(AgentAction.UNKNOWN)
@@ -120,46 +144,78 @@ public class AgentService {
         }
 
         AgentDecision decision = parseDecision(modelOutput);
-        String rawAction = decision.getAction() == null ? "" : decision.getAction();
-        if (isBanned(rawAction)) {
+        if (isBanned(decision.getAction() == null ? "" : decision.getAction())) {
             return AgentChatResponse.builder()
                     .reply("Sorry, that action is not allowed from the chatbot.")
                     .action(AgentAction.UNKNOWN)
-                    .rawModelOutput(modelOutput)
                     .build();
         }
 
-        AgentAction action = AgentAction.fromValue(rawAction);
+        return runDecision(decision, ctx, key, false);
+    }
 
-        if (action == AgentAction.SMALL_TALK || action == AgentAction.UNKNOWN) {
-            return AgentChatResponse.builder()
-                    .reply(StringUtils.hasText(decision.getResponse()) ? decision.getResponse()
-                            : "Could you clarify what you want to do?")
-                    .action(action)
-                    .rawModelOutput(modelOutput)
-                    .build();
-        }
-
+    private AgentChatResponse runDecision(AgentDecision decision, ConversationContext ctx, String key, boolean confirmed) {
         try {
-            if (requiresAuth(action) && !isAuthenticated()) {
-                return AgentChatResponse.builder()
-                        .reply("Please log in to perform this action.")
-                        .action(AgentAction.UNKNOWN)
-                        .rawModelOutput(modelOutput)
-                        .build();
-            }
-
-            AgentChatResponse resp = executeDecision(decision, modelOutput, ctx);
-            sessionStore.put(sessionId, mergeState(ctx, decision));
+            AgentChatResponse resp = executeDecision(decision, ctx, confirmed);
+            saveSession(key, mergeState(ctx, decision));
             return resp;
         } catch (Exception e) {
-            log.error("Failed to execute agent action {}", action, e);
+            log.error("Failed to execute agent action {}", resolveAction(decision), e);
             return AgentChatResponse.builder()
-                    .reply("I couldn't complete that yet. Please confirm the room and dates, and I'll try again.")
-                    .action(action)
-                    .rawModelOutput(modelOutput)
+                    .reply(errorReply(e))
+                    .action(AgentAction.fromValue(resolveAction(decision)))
                     .build();
         }
+    }
+
+    private String errorReply(Exception e) {
+        boolean userFacing = e instanceof IllegalArgumentException
+                || e instanceof NotFoundException
+                || e instanceof InvalidBookingStateAndDateException;
+        if (userFacing && StringUtils.hasText(e.getMessage())) {
+            return e.getMessage();
+        }
+        return "I couldn't complete that yet. Please confirm the room and dates, and I'll try again.";
+    }
+
+    private boolean isConfirmation(String content) {
+        return content != null && content.matches(
+                "(?i)\\s*(yes|y|yeah|yep|yup|confirm|confirmed|ok|okay|sure|go ahead|book it|please do)\\W*");
+    }
+
+    // ---- session handling ----
+
+    private String sessionKey(String sessionId) {
+        String sid = StringUtils.hasText(sessionId) ? sessionId.trim() : "";
+        if (isAuthenticated()) {
+            return "u:" + SecurityContextHolder.getContext().getAuthentication().getName() + ":" + sid;
+        }
+        return sid.isEmpty() ? null : "s:" + sid;
+    }
+
+    private ConversationContext loadSession(String key) {
+        if (key == null) {
+            return new ConversationContext();
+        }
+        SessionEntry entry = sessionStore.get(key);
+        if (entry == null || System.currentTimeMillis() - entry.touchedAt() > SESSION_TTL_MS) {
+            return new ConversationContext();
+        }
+        return entry.ctx();
+    }
+
+    private void saveSession(String key, ConversationContext ctx) {
+        if (key == null) {
+            return;
+        }
+        long now = System.currentTimeMillis();
+        if (sessionStore.size() >= MAX_SESSIONS) {
+            sessionStore.entrySet().removeIf(e -> now - e.getValue().touchedAt() > SESSION_TTL_MS);
+            if (sessionStore.size() >= MAX_SESSIONS) {
+                sessionStore.clear();
+            }
+        }
+        sessionStore.put(key, new SessionEntry(ctx, now));
     }
 
     private Response executeAction(AgentAction action, Map<String, Object> params) {
@@ -178,12 +234,12 @@ public class AgentService {
     }
 
     private UserDTO toUserDTO(Map<String, Object> params) {
+        // Password changes are intentionally not accepted through the chatbot.
         return UserDTO.builder()
                 .firstName(getString(params, "firstName"))
                 .lastName(getString(params, "lastName"))
                 .email(getString(params, "email"))
                 .phoneNumber(getString(params, "phoneNumber"))
-                .password(getString(params, "password"))
                 .build();
     }
 
@@ -213,15 +269,25 @@ public class AgentService {
         if (!StringUtils.hasText(value)) {
             throw new IllegalArgumentException("Missing required date: " + key);
         }
-        String normalized = value.trim().replaceAll("\\s+", " ");
-        for (DateTimeFormatter formatter : DATE_FORMATTERS) {
-            try {
-                return LocalDate.parse(normalized, formatter);
-            } catch (DateTimeParseException ignored) {
-                // try next formatter
+        LocalDate date = tryParseDate(value);
+        if (date == null) {
+            throw new IllegalArgumentException("Invalid date for " + key + ". Use a format like 2026-01-31 or 31 Jan 2026");
+        }
+        return date;
+    }
+
+    private LocalDate tryParseDate(String value) {
+        String normalized = value.trim().replace(",", " ").replace(".", "").replaceAll("\\s+", " ");
+        for (String candidate : List.of(normalized, normalized.replace(" ", ""))) {
+            for (DateTimeFormatter formatter : DATE_FORMATTERS) {
+                try {
+                    return LocalDate.parse(candidate, formatter);
+                } catch (DateTimeParseException ignored) {
+                    // try next formatter
+                }
             }
         }
-        throw new IllegalArgumentException("Invalid date format for " + key + ". Use YYYY-MM-DD");
+        return null;
     }
 
     private Long parseLong(Map<String, Object> params, String key) {
@@ -230,7 +296,7 @@ public class AgentService {
             throw new IllegalArgumentException("Missing required number: " + key);
         }
         try {
-            return Long.parseLong(value);
+            return Long.parseLong(value.trim());
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Invalid number for " + key);
         }
@@ -247,7 +313,7 @@ public class AgentService {
         String id = getString(params, "id");
         if (StringUtils.hasText(id)) {
             try {
-                return Long.parseLong(id);
+                return Long.parseLong(id.trim());
             } catch (NumberFormatException ignored) {
                 // continue
             }
@@ -257,7 +323,7 @@ public class AgentService {
         String roomNumberStr = getString(params, "roomNumber");
         if (StringUtils.hasText(roomNumberStr)) {
             try {
-                Integer roomNumber = Integer.parseInt(roomNumberStr);
+                Integer roomNumber = Integer.parseInt(roomNumberStr.trim());
                 var room = roomRepository.findByRoomNumber(roomNumber);
                 if (room != null) {
                     return room.getId();
@@ -272,23 +338,51 @@ public class AgentService {
     }
 
     private String getString(Map<String, Object> params, String key) {
+        if (params == null) {
+            return null;
+        }
         Object value = params.get(key);
-        return value == null ? null : value.toString();
+        if (value == null) {
+            return null;
+        }
+        // JSON numbers like 5.0 should still read as "5"
+        if (value instanceof Number n) {
+            double d = n.doubleValue();
+            if (!Double.isInfinite(d) && d == Math.rint(d)) {
+                return String.valueOf(n.longValue());
+            }
+        }
+        return value.toString();
+    }
+
+    private static DateTimeFormatter fmt(String pattern) {
+        return new DateTimeFormatterBuilder()
+                .parseCaseInsensitive()
+                .appendPattern(pattern)
+                .toFormatter(Locale.ENGLISH)
+                .withResolverStyle(ResolverStyle.STRICT);
     }
 
     private static final List<DateTimeFormatter> DATE_FORMATTERS = List.of(
-            DateTimeFormatter.ISO_LOCAL_DATE,
-            DateTimeFormatter.ofPattern("yyyy/MM/dd"),
-            DateTimeFormatter.ofPattern("dd-MM-yyyy"),
-            DateTimeFormatter.ofPattern("dd/MM/yyyy"),
-            new DateTimeFormatterBuilder().parseCaseInsensitive().appendPattern("d MMM yyyy").toFormatter(Locale.ENGLISH),
-            new DateTimeFormatterBuilder().parseCaseInsensitive().appendPattern("d MMMM yyyy").toFormatter(Locale.ENGLISH),
-            new DateTimeFormatterBuilder().parseCaseInsensitive().appendPattern("dMMMyyyy").toFormatter(Locale.ENGLISH),
-            new DateTimeFormatterBuilder().parseCaseInsensitive().appendPattern("MMM d, yyyy").toFormatter(Locale.ENGLISH),
-            new DateTimeFormatterBuilder().parseCaseInsensitive().appendPattern("MMMM d, yyyy").toFormatter(Locale.ENGLISH)
+            fmt("uuuu-M-d"),
+            fmt("uuuu/M/d"),
+            fmt("d-M-uuuu"),
+            fmt("d/M/uuuu"),
+            fmt("d MMM uuuu"),
+            fmt("d MMMM uuuu"),
+            fmt("dMMMuuuu"),
+            fmt("dMMMMuuuu"),
+            fmt("MMM d uuuu"),
+            fmt("MMMM d uuuu")
     );
 
-    private static final Pattern DATE_PATTERN = Pattern.compile("(?i)(\\d{1,2}\\s*[A-Za-z]{3,9}\\s*\\d{4}|\\d{4}-\\d{2}-\\d{2}|\\d{1,2}/\\d{1,2}/\\d{4}|\\d{1,2}-\\d{1,2}-\\d{4})");
+    private static final String MONTH = "(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\\.?";
+    private static final Pattern DATE_PATTERN = Pattern.compile(
+            "(?i)\\b(\\d{4}-\\d{1,2}-\\d{1,2}"
+                    + "|\\d{4}/\\d{1,2}/\\d{1,2}"
+                    + "|\\d{1,2}[/-]\\d{1,2}[/-]\\d{4}"
+                    + "|\\d{1,2}\\s*" + MONTH + "\\s*,?\\s*\\d{4}"
+                    + "|" + MONTH + "\\s+\\d{1,2}\\s*,?\\s*\\d{4})\\b");
     private static final Pattern ROOM_PATTERN = Pattern.compile("room\\s*(number\\s*)?(\\d{1,5})", Pattern.CASE_INSENSITIVE);
     private static final Pattern ANY_NUMBER = Pattern.compile("\\b(\\d{3,5})\\b");
 
@@ -299,7 +393,8 @@ public class AgentService {
             normalizeDecision(d);
             return d;
         } catch (Exception ex) {
-            log.warn("Strict parse failed, trying to extract JSON. Output: {}", modelOutput);
+            log.warn("Strict parse of model output failed, trying to extract JSON");
+            log.debug("Model output: {}", modelOutput);
             try {
                 int start = modelOutput.indexOf('{');
                 int end = modelOutput.lastIndexOf('}');
@@ -356,10 +451,10 @@ public class AgentService {
     }
 
     private boolean isAuthenticated() {
-        return SecurityContextHolder.getContext().getAuthentication() != null
-                && SecurityContextHolder.getContext().getAuthentication().isAuthenticated()
-                && !"anonymousUser".equalsIgnoreCase(
-                String.valueOf(SecurityContextHolder.getContext().getAuthentication().getPrincipal()));
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth != null
+                && auth.isAuthenticated()
+                && !"anonymousUser".equalsIgnoreCase(String.valueOf(auth.getPrincipal()));
     }
 
     private AgentChatResponse ensureSlots(AgentDecision decision, AgentAction action, ConversationContext ctx) {
@@ -420,178 +515,123 @@ public class AgentService {
         return null;
     }
 
-    private AgentDecision fallbackDecision(AgentChatRequest request) {
-        List<AgentChatMessage> msgs = request.getMessages();
-        if (msgs == null || msgs.isEmpty()) return null;
-        AgentChatMessage last = msgs.get(msgs.size() - 1);
-        String content = last.getContent() == null ? "" : last.getContent().trim();
+    private boolean mentionsBook(String lower) {
+        // "my bookings" / "booking history" is a lookup, not a new booking
+        if (lower.contains("my booking") || lower.contains("bookings")) {
+            return false;
+        }
+        return lower.contains("book") || lower.contains("reserve");
+    }
+
+    private boolean mentionsRooms(String lower) {
+        return lower.contains("rooms") || lower.contains("available");
+    }
+
+    private AgentDecision smallTalk(String response) {
+        AgentDecision d = new AgentDecision();
+        d.setAction("small_talk");
+        d.setResponse(response);
+        return d;
+    }
+
+    private AgentDecision actionDecision(String action, ConversationContext ctx, boolean withRoom, String response) {
+        AgentDecision d = new AgentDecision();
+        d.setAction(action);
+        Map<String, Object> params = new HashMap<>();
+        params.put("checkInDate", ctx.checkIn);
+        params.put("checkOutDate", ctx.checkOut);
+        if (withRoom) {
+            params.put("roomNumber", ctx.roomNumber.toString());
+        }
+        d.setParams(params);
+        d.setResponse(response);
+        return d;
+    }
+
+    /**
+     * Rule-based handling for clear booking/availability messages. Returns null when the latest
+     * message carries no booking signal so the LLM can handle it.
+     */
+    private AgentDecision fallbackDecision(String content, ConversationContext ctx) {
         if (!StringUtils.hasText(content)) return null;
+        content = content.trim();
 
-        ConversationContext ctx = deriveContext(msgs);
-
-        // Simple greeting fallback
-        if (content.matches("(?i)hi|hello|hey")) {
-            AgentDecision d = new AgentDecision();
-            d.setAction("small_talk");
-            d.setResponse("Hi! Tell me if you want available rooms, to book, or to view your bookings.");
-            return d;
+        if (content.matches("(?i)(hi|hello|hey)\\W*")) {
+            return smallTalk("Hi! Tell me if you want available rooms, to book, or to view your bookings.");
         }
 
-        // If we already have intent + dates in context, proceed
-        if (ctx.intent == ConversationIntent.VIEW_ROOMS && ctx.hasDates()) {
-            AgentDecision d = new AgentDecision();
-            d.setAction("available_rooms");
-            Map<String, Object> params = new HashMap<>();
-            params.put("checkInDate", ctx.checkIn);
-            params.put("checkOutDate", ctx.checkOut);
-            d.setParams(params);
-            d.setResponse("Searching available rooms from " + ctx.checkIn + " to " + ctx.checkOut + ".");
-            return d;
-        }
-
-        if (ctx.intent == ConversationIntent.BOOK_ROOM && ctx.hasDates() && ctx.roomNumber != null) {
-            AgentDecision d = new AgentDecision();
-            d.setAction("create_booking");
-            Map<String, Object> params = new HashMap<>();
-            params.put("roomNumber", ctx.roomNumber.toString());
-            params.put("checkInDate", ctx.checkIn);
-            params.put("checkOutDate", ctx.checkOut);
-            d.setParams(params);
-            d.setResponse("Booking requested for room " + ctx.roomNumber + " from " + ctx.checkIn + " to " + ctx.checkOut + ".");
-            return d;
-        }
-
-        // Latest message intent handling
-        List<String> dates = extractDates(content);
-        Integer roomNumber = extractRoomNumber(content);
-        boolean mentionsRooms = content.toLowerCase(Locale.ROOT).contains("rooms")
-                || content.toLowerCase(Locale.ROOT).contains("available");
-        boolean mentionsBook = content.toLowerCase(Locale.ROOT).contains("book")
-                || content.toLowerCase(Locale.ROOT).contains("reserve");
-        boolean mentionsSameDate = content.toLowerCase(Locale.ROOT).contains("same date")
-                || content.toLowerCase(Locale.ROOT).contains("same day")
-                || content.toLowerCase(Locale.ROOT).contains("same dates");
-        boolean mentionsBookThis = content.toLowerCase(Locale.ROOT).contains("book this")
-                || content.toLowerCase(Locale.ROOT).contains("book one")
-                || content.toLowerCase(Locale.ROOT).contains("book on same date");
-
-        if (mentionsBook) {
-            ctx.intent = ConversationIntent.BOOK_ROOM;
-        } else if (mentionsRooms) {
-            ctx.intent = ConversationIntent.VIEW_ROOMS;
-        }
-
-        // Update dates in context from latest message
-        if (dates.size() >= 1) ctx.checkIn = ctx.checkIn == null ? dates.get(0) : ctx.checkIn;
-        if (dates.size() >= 2) ctx.checkOut = ctx.checkOut == null ? dates.get(1) : ctx.checkOut;
-        if (roomNumber != null) ctx.roomNumber = ctx.roomNumber == null ? roomNumber : ctx.roomNumber;
-
-        if (ctx.intent == ConversationIntent.BOOK_ROOM && ctx.hasDates() && ctx.roomNumber != null) {
-            AgentDecision d = new AgentDecision();
-            d.setAction("create_booking");
-            Map<String, Object> params = new HashMap<>();
-            params.put("roomNumber", ctx.roomNumber.toString());
-            params.put("checkInDate", ctx.checkIn);
-            params.put("checkOutDate", ctx.checkOut);
-            d.setParams(params);
-            d.setResponse("Booking requested for room " + ctx.roomNumber + " from " + ctx.checkIn + " to " + ctx.checkOut + ".");
-            return d;
-        }
-
-        if (ctx.intent == ConversationIntent.VIEW_ROOMS && ctx.hasDates()) {
-            AgentDecision d = new AgentDecision();
-            d.setAction("available_rooms");
-            Map<String, Object> params = new HashMap<>();
-            params.put("checkInDate", ctx.checkIn);
-            params.put("checkOutDate", ctx.checkOut);
-            d.setParams(params);
-            d.setResponse("Searching available rooms from " + ctx.checkIn + " to " + ctx.checkOut + ".");
-            return d;
-        }
-
-        // Transition: viewed rooms to booking on same dates
-        if (ctx.intent == ConversationIntent.BOOK_ROOM && ctx.hasDates() && (mentionsSameDate || mentionsBookThis)) {
-            if (ctx.roomNumber != null) {
-                AgentDecision d = new AgentDecision();
-                d.setAction("create_booking");
-                Map<String, Object> params = new HashMap<>();
-                params.put("roomNumber", ctx.roomNumber.toString());
-                params.put("checkInDate", ctx.checkIn);
-                params.put("checkOutDate", ctx.checkOut);
-                d.setParams(params);
-                d.setResponse("Booking requested for room " + ctx.roomNumber + " from " + ctx.checkIn + " to " + ctx.checkOut + ".");
-                return d;
-            } else {
-                AgentDecision d = new AgentDecision();
-                d.setAction("small_talk");
-                d.setResponse("Sure, which room number would you like to book for those dates?");
-                return d;
-            }
-        }
-
-        // Ask for missing pieces once
-        if (ctx.intent == ConversationIntent.VIEW_ROOMS && !ctx.hasDates()) {
-            AgentDecision d = new AgentDecision();
-            d.setAction("small_talk");
-            d.setResponse("Share check-in and check-out dates to see available rooms.");
-            return d;
-        }
+        // Only act when the latest message itself carries a signal; otherwise stale
+        // history would re-trigger searches on messages like "thanks".
+        String lower = content.toLowerCase(Locale.ROOT);
+        boolean hasSignal = mentionsBook(lower)
+                || mentionsRooms(lower)
+                || !extractDates(content).isEmpty()
+                || extractRoomNumber(content) != null;
+        if (!hasSignal) return null;
 
         if (ctx.intent == ConversationIntent.BOOK_ROOM) {
             if (ctx.roomNumber == null && !ctx.hasDates()) {
-                AgentDecision d = new AgentDecision();
-                d.setAction("small_talk");
-                d.setResponse("To book, tell me the room number and the check-in/check-out dates.");
-                return d;
+                return smallTalk("To book, tell me the room number and the check-in/check-out dates.");
             }
             if (ctx.roomNumber == null) {
-                AgentDecision d = new AgentDecision();
-                d.setAction("small_talk");
-                d.setResponse("Which room number should I book?");
-                return d;
+                return smallTalk("Which room number should I book?");
             }
             if (!ctx.hasDates()) {
-                AgentDecision d = new AgentDecision();
-                d.setAction("small_talk");
-                d.setResponse("Please provide check-in and check-out dates for the booking.");
-                return d;
+                return smallTalk("Please provide check-in and check-out dates for the booking.");
             }
+            return actionDecision("create_booking", ctx, true, null);
+        }
+
+        if (ctx.intent == ConversationIntent.VIEW_ROOMS) {
+            if (!ctx.hasDates()) {
+                return smallTalk("Share check-in and check-out dates to see available rooms.");
+            }
+            return actionDecision("available_rooms", ctx, false,
+                    "Searching available rooms from " + ctx.checkIn + " to " + ctx.checkOut + ".");
         }
 
         return null;
     }
 
+    /** Returns up to two dates as ISO strings. Explicit dates win over relative keywords. */
     private List<String> extractDates(String text) {
         List<String> results = new ArrayList<>();
 
-        // relative keywords
-        String lower = text.toLowerCase(Locale.ROOT);
-        if (lower.contains("tomorrow")) {
-            LocalDate start = LocalDate.now().plusDays(1);
-            results.add(start.toString());
-            results.add(start.plusDays(1).toString());
-        } else if (lower.contains("today") || lower.contains("tonight")) {
-            LocalDate start = LocalDate.now();
-            results.add(start.toString());
-            results.add(start.plusDays(1).toString());
-        }
-
         Matcher m = DATE_PATTERN.matcher(text);
         while (m.find() && results.size() < 2) {
-            results.add(m.group(1));
+            LocalDate d = tryParseDate(m.group(1));
+            if (d != null) {
+                results.add(d.toString());
+            }
+        }
+
+        if (results.isEmpty()) {
+            String lower = text.toLowerCase(Locale.ROOT);
+            LocalDate start = null;
+            if (lower.contains("tomorrow")) {
+                start = LocalDate.now().plusDays(1);
+            } else if (lower.contains("today") || lower.contains("tonight")) {
+                start = LocalDate.now();
+            }
+            if (start != null) {
+                results.add(start.toString());
+                results.add(start.plusDays(1).toString());
+            }
         }
         return results;
     }
 
     private Integer extractRoomNumber(String text) {
-        Matcher m = ROOM_PATTERN.matcher(text);
+        // Strip dates first so a year like 2026 is never mistaken for a room number
+        String cleaned = DATE_PATTERN.matcher(text).replaceAll(" ");
+        Matcher m = ROOM_PATTERN.matcher(cleaned);
         if (m.find()) {
             try {
                 return Integer.parseInt(m.group(2));
             } catch (NumberFormatException ignored) {}
         }
         // fallback: any 3-5 digit number in the text
-        Matcher any = ANY_NUMBER.matcher(text);
+        Matcher any = ANY_NUMBER.matcher(cleaned);
         if (any.find()) {
             try {
                 return Integer.parseInt(any.group(1));
@@ -600,29 +640,45 @@ public class AgentService {
         return null;
     }
 
+    /** Later dates replace earlier ones; a single later date completes or restarts the stay. */
+    private void applyDates(ConversationContext ctx, List<String> dates) {
+        if (dates.isEmpty()) return;
+        if (dates.size() >= 2) {
+            ctx.checkIn = dates.get(0);
+            ctx.checkOut = dates.get(1);
+            return;
+        }
+        String d = dates.get(0);
+        if (ctx.checkIn != null && d.compareTo(ctx.checkIn) > 0) {
+            ctx.checkOut = d;
+        } else {
+            ctx.checkIn = d;
+            ctx.checkOut = null;
+        }
+    }
+
     private ConversationContext deriveContext(List<AgentChatMessage> messages) {
         ConversationContext ctx = new ConversationContext();
         for (AgentChatMessage m : messages) {
-            String content = m.getContent() == null ? "" : m.getContent().toLowerCase(Locale.ROOT);
+            String content = m.getContent() == null ? "" : m.getContent();
             if ("assistant".equalsIgnoreCase(m.getRole())) {
-                ctx.lastAssistant = m.getContent();
+                ctx.lastAssistant = content;
+                continue;
             }
-            if ("user".equalsIgnoreCase(m.getRole())) {
-                ctx.lastUser = m.getContent();
-            }
-            if (content.contains("available") || content.contains("rooms")) {
+            ctx.lastUser = content;
+
+            String lower = content.toLowerCase(Locale.ROOT);
+            if (mentionsRooms(lower)) {
                 ctx.intent = ConversationIntent.VIEW_ROOMS;
             }
-            if (content.contains("book")) {
+            if (mentionsBook(lower)) {
                 ctx.intent = ConversationIntent.BOOK_ROOM;
             }
 
-            List<String> dates = extractDates(m.getContent() == null ? "" : m.getContent());
-            if (dates.size() >= 1 && ctx.checkIn == null) ctx.checkIn = dates.get(0);
-            if (dates.size() >= 2 && ctx.checkOut == null) ctx.checkOut = dates.get(1);
+            applyDates(ctx, extractDates(content));
 
-            Integer rn = extractRoomNumber(m.getContent() == null ? "" : m.getContent());
-            if (rn != null && ctx.roomNumber == null) {
+            Integer rn = extractRoomNumber(content);
+            if (rn != null) {
                 ctx.roomNumber = rn;
             }
         }
@@ -642,25 +698,25 @@ public class AgentService {
         Integer roomNumber;
         String lastUser;
         String lastAssistant;
+        // Booking params awaiting the user's "yes"; null when nothing is pending
+        Map<String, Object> pendingBooking;
 
         boolean hasDates() {
             return checkIn != null && checkOut != null;
         }
     }
 
-    private AgentChatResponse executeDecision(AgentDecision decision, String rawModelOutput, ConversationContext providedCtx) {
+    private AgentChatResponse executeDecision(AgentDecision decision, ConversationContext ctx, boolean confirmed) {
         AgentAction action = AgentAction.fromValue(resolveAction(decision));
-        ConversationContext ctx = providedCtx != null ? providedCtx : new ConversationContext();
 
         // No backend call needed for small talk / unknown
         if (action == AgentAction.SMALL_TALK || action == AgentAction.UNKNOWN) {
             String reply = StringUtils.hasText(decision.getResponse())
                     ? decision.getResponse()
-                    : defaultReply(action);
+                    : (action == AgentAction.SMALL_TALK ? "Could you clarify what you want to do?" : defaultReply(action));
             return AgentChatResponse.builder()
                     .reply(reply)
                     .action(action)
-                    .rawModelOutput(rawModelOutput)
                     .build();
         }
 
@@ -668,7 +724,6 @@ public class AgentService {
             return AgentChatResponse.builder()
                     .reply("Please log in to perform this action.")
                     .action(AgentAction.UNKNOWN)
-                    .rawModelOutput(rawModelOutput)
                     .build();
         }
 
@@ -677,13 +732,26 @@ public class AgentService {
             return slotResponse;
         }
 
+        if (action == AgentAction.CREATE_BOOKING && !confirmed) {
+            Map<String, Object> p = decision.getParams();
+            String room = StringUtils.hasText(getString(p, "roomNumber")) ? getString(p, "roomNumber")
+                    : StringUtils.hasText(getString(p, "roomId")) ? getString(p, "roomId")
+                    : getString(p, "id");
+            ctx.pendingBooking = new HashMap<>(p);
+            return AgentChatResponse.builder()
+                    .reply("Please confirm: book room " + room + " from " + getString(p, "checkInDate")
+                            + " to " + getString(p, "checkOutDate") + "? Reply \"yes\" to confirm.")
+                    .action(AgentAction.SMALL_TALK)
+                    .build();
+        }
+        ctx.pendingBooking = null;
+
         Response backendResponse = executeAction(action, decision.getParams());
         String reply = buildReply(action, decision.getResponse(), backendResponse);
         return AgentChatResponse.builder()
                 .reply(reply)
                 .action(action)
                 .backendResponse(backendResponse)
-                .rawModelOutput(rawModelOutput)
                 .build();
     }
 
@@ -703,10 +771,11 @@ public class AgentService {
             var b = backendResponse.getBooking();
             String ref = b.getBookingReference() != null ? b.getBookingReference() : "N/A";
             String total = b.getTotalPrice() != null ? b.getTotalPrice().toString() : "N/A";
+            // The amount is deliberately not put in the URL; the payment flow must price by reference server-side.
             String link = frontendPaymentUrl;
             if (StringUtils.hasText(link)) {
                 String sep = link.contains("?") ? "&" : "?";
-                link = link + sep + "bookingRef=" + ref + "&amount=" + total;
+                link = link + sep + "bookingRef=" + URLEncoder.encode(ref, StandardCharsets.UTF_8);
             }
             String clickable = StringUtils.hasText(link) ? "[Pay now](" + link + ")" : "Please proceed to payment to confirm your booking.";
             return "Booking created. Reference: " + ref + ", total: " + total + ". " + clickable;
@@ -718,10 +787,6 @@ public class AgentService {
     }
 
     private String buildPrompt(List<AgentChatMessage> messages, ConversationContext ctx) {
-        if (messages == null || messages.isEmpty()) {
-            messages = List.of(AgentChatMessage.builder().role("user").content("Help me book a room").build());
-        }
-
         StringJoiner joiner = new StringJoiner("\n");
         for (AgentChatMessage message : messages) {
             joiner.add(message.getRole() + ": " + message.getContent());
@@ -753,10 +818,18 @@ public class AgentService {
         ConversationContext merged = new ConversationContext();
         merged.intent = derived.intent != ConversationIntent.NONE ? derived.intent : base.intent;
         merged.checkIn = derived.checkIn != null ? derived.checkIn : base.checkIn;
-        merged.checkOut = derived.checkOut != null ? derived.checkOut : base.checkOut;
+        if (derived.checkOut != null) {
+            merged.checkOut = derived.checkOut;
+        } else if (derived.checkIn != null) {
+            // new check-in only: keep the stored check-out only if it still follows it
+            merged.checkOut = base.checkOut != null && base.checkOut.compareTo(derived.checkIn) > 0 ? base.checkOut : null;
+        } else {
+            merged.checkOut = base.checkOut;
+        }
         merged.roomNumber = derived.roomNumber != null ? derived.roomNumber : base.roomNumber;
         merged.lastUser = derived.lastUser != null ? derived.lastUser : base.lastUser;
         merged.lastAssistant = derived.lastAssistant != null ? derived.lastAssistant : base.lastAssistant;
+        // pendingBooking is intentionally not carried over: any message other than "yes" cancels it
         return merged;
     }
 
@@ -768,16 +841,16 @@ public class AgentService {
         merged.roomNumber = pickRoom(decision.getParams(), ctx.roomNumber);
         merged.lastUser = ctx.lastUser;
         merged.lastAssistant = ctx.lastAssistant;
+        merged.pendingBooking = ctx.pendingBooking;
         return merged;
     }
 
     private ConversationIntent resolveIntent(AgentDecision d, ConversationContext ctx) {
         String intent = resolveAction(d).toLowerCase(Locale.ROOT);
+        if (intent.contains("bookings")) return ctx.intent; // get_my_bookings is a lookup
         if (intent.contains("book")) return ConversationIntent.BOOK_ROOM;
         if (intent.contains("available") || intent.contains("room")) return ConversationIntent.VIEW_ROOMS;
-        if (intent.contains("booking")) return ConversationIntent.VIEW_ROOMS;
         if (intent.contains("update")) return ConversationIntent.NONE;
-        if (intent.contains("small")) return ctx.intent;
         return ctx.intent;
     }
 
@@ -789,9 +862,8 @@ public class AgentService {
     private Integer pickRoom(Map<String, Object> params, Integer fallback) {
         String v = getString(params, "roomNumber");
         if (StringUtils.hasText(v)) {
-            try { return Integer.parseInt(v); } catch (NumberFormatException ignored) {}
+            try { return Integer.parseInt(v.trim()); } catch (NumberFormatException ignored) {}
         }
         return fallback;
     }
 }
-
