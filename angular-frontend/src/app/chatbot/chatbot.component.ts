@@ -78,7 +78,7 @@ export class ChatbotComponent implements OnInit, AfterViewChecked, OnDestroy {
     const saved = this.readPreference();
     const isSmallScreen = window.matchMedia?.('(max-width: 639px)').matches ?? false;
     if (saved === null) {
-      // First visit: open the small panel. On phones it would fill the screen,
+      // New visit: open the small panel. On phones it would fill the screen,
       // so show a dismissible greeting next to the launcher instead.
       this.isOpen = !isSmallScreen;
       this.showPeek = isSmallScreen;
@@ -386,7 +386,8 @@ export class ChatbotComponent implements OnInit, AfterViewChecked, OnDestroy {
 
   private readPreference(): boolean | null {
     try {
-      const value = localStorage.getItem(OPEN_KEY);
+      // Per-tab, so every new visit starts with the compact panel open again
+      const value = sessionStorage.getItem(OPEN_KEY);
       return value === null ? null : value === 'true';
     } catch {
       return null;
@@ -395,7 +396,7 @@ export class ChatbotComponent implements OnInit, AfterViewChecked, OnDestroy {
 
   private savePreference(open: boolean): void {
     try {
-      localStorage.setItem(OPEN_KEY, String(open));
+      sessionStorage.setItem(OPEN_KEY, String(open));
     } catch {
       // Storage unavailable: preference lasts for this page view only
     }

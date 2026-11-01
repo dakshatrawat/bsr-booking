@@ -16,7 +16,17 @@
   z-index: -1;
   background:
     linear-gradient(180deg, rgba(10, 20, 35, 0.45) 0%, rgba(10, 20, 35, 0.6) 100%),
-    url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=2000&q=75') center / cover;
+    url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=2000&q=75') center 70% / cover;
+}
+
+/* Photo stays put while the page scrolls over it. A fixed background is sized to the
+   viewport, so the banner would only show its top (sky); lift it to bring the peaks into view.
+   Mouse devices only: touch browsers often ignore fixed and the offset would leave a gap. */
+@media (hover: hover) and (pointer: fine) {
+  .about-hero__media {
+    background-attachment: fixed;
+    background-position: center, center top -30vh;
+  }
 }
 
 .about-hero__content { padding-block: var(--space-7); }

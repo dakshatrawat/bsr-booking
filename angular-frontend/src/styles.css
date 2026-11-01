@@ -12,12 +12,12 @@
   color-scheme: light;
 
   /* Neutrals */
-  --color-bg: #F6F7F9;
+  --color-bg: #F1F3F6;
   --color-surface: #FFFFFF;
   --color-surface-muted: #F3F4F6;
   --color-surface-sunken: #ECEEF1;
-  --color-border: #E3E6EA;
-  --color-border-strong: #CDD2D9;
+  --color-border: #D3D8DF;
+  --color-border-strong: #B6BEC9;
   --color-border-input: #858D99;   /* 3.3:1 on surface, WCAG 1.4.11 */
   --color-text: #111827;           /* 17:1 */
   --color-text-muted: #4B5563;     /* 7.6:1 */
@@ -50,7 +50,7 @@
   --color-info-border: #BBD5F2;
   --color-neutral-bg: #F1F3F5;
   --color-neutral-fg: #4B5563;
-  --color-neutral-border: #DDE1E6;
+  --color-neutral-border: #CDD3DA;
 
   --color-backdrop: rgb(17 24 39 / 0.5);
 
@@ -84,7 +84,7 @@
   --radius-md: 6px;
   --radius-lg: 8px;
   --radius-full: 999px;
-  --shadow-sm: 0 1px 2px rgb(16 24 40 / 0.06);
+  --shadow-sm: 0 1px 2px rgb(16 24 40 / 0.08);
   --shadow-md: 0 4px 8px -2px rgb(16 24 40 / 0.10), 0 2px 4px -2px rgb(16 24 40 / 0.06);
   --shadow-lg: 0 16px 32px -8px rgb(16 24 40 / 0.18), 0 4px 8px -4px rgb(16 24 40 / 0.08);
   --focus-ring: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-focus);
